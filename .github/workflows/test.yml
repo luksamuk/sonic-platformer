@@ -2,9 +2,14 @@
 
 name: Testes Automatizados
 
+# Os testes ocorrem na geração de pull requests para a branch master
+# e também na geração de tags de versão.
 on:
   pull_request:
     branches: [master]
+  push:
+    tags:
+      - "v*"
 
 env:
   CARGO_TERM_COLOR: always
