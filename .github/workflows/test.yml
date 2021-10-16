@@ -1,0 +1,48 @@
+# Amplamente inspirado por https://github.com/brooks-builds/bbecs
+
+name: Testes Automatizados
+
+on:
+  pull_request:
+    branches: [master]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Instalação de dependências
+        run: sudo apt update && sudo apt install libasound2-dev libudev-dev pkg-config
+
+      # Action disponível globalmente. Realiza cache da instalação do Cargo.
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      
+      # Clona código do repositório
+      - uses: actions/checkout@v2
+
+      # Instala Rust e adiciona features ao Rust para uso posterior
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          components: clippy, rustfmt
+      
+      - name: Revisão automatizada de código (Linter)
+        run: cargo fmt -- --check
+      
+      - name: Sugestões e melhorias de código (Clippy)
+        run: cargo clippy -- -D clippy::all
+      
+      - name: Testes unitários
+        run: cargo test
+      
+      - name: Compilação
+        run: cargo build
