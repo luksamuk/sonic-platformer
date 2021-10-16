@@ -7,9 +7,6 @@ name: Testes Automatizados
 on:
   pull_request:
     branches: [master]
-  push:
-    tags:
-      - "v*"
 
 env:
   CARGO_TERM_COLOR: always
@@ -22,8 +19,8 @@ jobs:
       - name: Instalação de dependências
         run: sudo apt update && sudo apt install libasound2-dev libudev-dev pkg-config
 
-      # Action disponível globalmente. Realiza cache da instalação do Cargo.
-      - uses: actions/cache@v2
+      - name: Cache
+        uses: actions/cache@v2
         with:
           path: |
             ~/.cargo/registry
@@ -31,13 +28,14 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       
-      # Clona código do repositório
-      - uses: actions/checkout@v2
+      - name: Checkout do repositório
+        uses: actions/checkout@v2
 
-      # Instala Rust e adiciona features ao Rust para uso posterior
-      - uses: actions-rs/toolchain@v1
+      - name: Instalação da toolchain de Rust
+        uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
+          target: x86_64-pc-windows-gnu
           components: clippy, rustfmt
       
       - name: Revisão automatizada de código (Linter)
@@ -49,5 +47,20 @@ jobs:
       - name: Testes unitários
         run: cargo test
       
-      - name: Compilação
+      - name: Compilação (Linux)
         run: cargo build
+      
+      - name: Upload de artefatos (Linux)
+        uses: actions/upload-artifact@v2
+        with:
+          name: linux_debug
+          path: ./target/debug/sonic-platformer
+      
+      - name: Compilação (Windows/MinGW)
+        run: cargo build --target x86_64-pc-windows-gnu
+      
+      - name: Upload de artefatos (Windows/MinGW)
+        uses: actions/upload-artifact@v2
+        with:
+          name: windows_debug
+          path: ./target/x86_64-pc-windows-gnu/debug/sonic-platformer.exe

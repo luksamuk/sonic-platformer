@@ -11,14 +11,50 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  release-linux:
+  test-before-release:
     runs-on: ubuntu-latest
 
     steps:
       - name: Instalação de dependências
         run: sudo apt update && sudo apt install libasound2-dev libudev-dev pkg-config
 
-      - uses: actions/cache@v2
+      - name: Cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      
+      - name: Checkout do repositório
+        uses: actions/checkout@v2
+
+      - name: Instalação da toolchain de Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          components: clippy, rustfmt
+      
+      - name: Revisão automatizada de código (Linter)
+        run: cargo fmt -- --check
+      
+      - name: Sugestões e melhorias de código (Clippy)
+        run: cargo clippy -- -D clippy::all
+      
+      - name: Testes unitários
+        run: cargo test
+  
+  release-linux:
+    runs-on: ubuntu-latest
+    needs: [test-before-release]
+
+    steps:
+      - name: Instalação de dependências
+        run: sudo apt update && sudo apt install libasound2-dev libudev-dev pkg-config
+
+      - name: Cache
+        uses: actions/cache@v2
         with:
           path: |
             ~/.cargo/registry
@@ -26,28 +62,34 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      - uses: actions/checkout@v2
+      - name: Checkout do repositório
+        uses: actions/checkout@v2
 
-      - uses: actions-rs/toolchain@v1
+      - name: Instalação da toolchain de Rust
+        uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           components: clippy, rustfmt
 
       - name: Compilação de Versão
         run: cargo build --release
-
-      - uses: marvinpinto/action-automatic-releases@latest
+      
+      - name: Compactação de artefatos
+        run: cp ./target/release/sonic-platformer ./ && tar zcvf sonic-platformer.tar.gz sonic-platformer && rm sonic-platformer
+      
+      - name: Upload de artefatos
+        uses: actions/upload-artifact@v2
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          prerelease: false
-          files: |
-            target/release/sonic-platformer
+          name: build-linux
+          path: ./sonic-platformer.tar.gz
   
   release-windows:
     runs-on: windows-latest
+    needs: [test-before-release]
 
     steps:
-      - uses: actions/cache@v2
+      - name: Cache
+        uses: actions/cache@v2
         with:
           path: |
             ~/.cargo/registry
@@ -55,20 +97,39 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      - uses: actions/checkout@v2
+      - name: Checkout do repositório
+        uses: actions/checkout@v2
 
-      - uses: actions-rs/toolchain@v1
+      - name: Instalação da toolchain de Rust
+        uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           components: clippy, rustfmt
 
       - name: Compilação de Versão
-        run: cargo build --release
-        
-      - uses: marvinpinto/action-automatic-releases@latest
+        run: cargo rustc --release -- -Clink-args="/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup"
+      
+      - name: Compactação de artefatos
+        uses: papeloto/action-zip@v1
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          prerelease: false
-          files: |
-            target/release/sonic-platformer.exe
+          files: ./target/release/sonic-platformer.exe
+          dest: sonic-platformer.zip
+      
+      - name: Upload de artefatos
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-windows
+          path: ./sonic-platformer.zip
 
+  cria_release:
+    runs-on: ubuntu-latest
+    needs: [release-linux, release-windows]
+    steps:
+      - name: Recuperação de artefatos
+        uses: actions/download-artifact@v2
+      - name: Criação do Release
+        id: release_step
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "build-windows/sonic-platformer.zip,build-linux/sonic-platformer.tar.gz"
+          token: ${{ secrets.GITHUB_TOKEN }}
