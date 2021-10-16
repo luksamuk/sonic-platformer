@@ -11,14 +11,13 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  tagged-release:
+  release-linux:
     runs-on: ubuntu-latest
 
     steps:
       - name: Instalação de dependências
         run: sudo apt update && sudo apt install libasound2-dev libudev-dev pkg-config
 
-      # Action disponível globalmente. Realiza cache da instalação do Cargo.
       - uses: actions/cache@v2
         with:
           path: |
@@ -26,33 +25,50 @@ jobs:
             ~/.cargo/git
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      
-      # Clona código do repositório
+
       - uses: actions/checkout@v2
 
-      # Instala Rust e adiciona features ao Rust para uso posterior
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           components: clippy, rustfmt
-      
-      - name: Revisão automatizada de código (Linter)
-        run: cargo fmt -- --check
-      
-      - name: Sugestões e melhorias de código (Clippy)
-        run: cargo clippy -- -D clippy::all
-      
-      - name: Testes unitários
-        run: cargo test
-      
+
       - name: Compilação de Versão
         run: cargo build --release
-      
+
       - uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           prerelease: false
           files: |
-            LICENSE.md
             target/release/sonic-platformer
+  
+  release-windows:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - uses: actions/checkout@v2
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          components: clippy, rustfmt
+
+      - name: Compilação de Versão
+        run: cargo build --release
+        
+      - uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          prerelease: false
+          files: |
+            target/release/sonic-platformer.exe
 
