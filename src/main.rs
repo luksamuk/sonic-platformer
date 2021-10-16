@@ -3,7 +3,7 @@ use ggez::graphics;
 use ggez::{Context, GameResult};
 use glam::*;
 
-struct MainState{}
+struct MainState {}
 
 impl MainState {
     fn new() -> GameResult<MainState> {
@@ -35,8 +35,7 @@ impl event::EventHandler<ggez::GameError> for MainState {
 }
 
 fn main() -> GameResult {
-    let context_builder = ggez::ContextBuilder::new(
-        "platformer", "Lucas S. Vieira");
+    let context_builder = ggez::ContextBuilder::new("platformer", "Lucas S. Vieira");
     let (ctx, event_loop) = context_builder.build()?;
     let state = MainState::new()?;
     event::run(ctx, event_loop, state)
