@@ -3,16 +3,20 @@ use ggez::graphics;
 use ggez::{Context, GameResult};
 use glam::*;
 
-struct MainState {}
+struct MainState {
+    circulo_x: f32,
+}
 
 impl MainState {
     fn new() -> GameResult<MainState> {
-        Ok(MainState {})
+        let state = MainState { circulo_x: 0.0 };
+        Ok(state)
     }
 }
 
 impl event::EventHandler<ggez::GameError> for MainState {
     fn update(&mut self, _ctx: &mut Context) -> GameResult {
+        self.circulo_x = self.circulo_x % 800.0 + 1.0;
         Ok(())
     }
 
@@ -27,7 +31,7 @@ impl event::EventHandler<ggez::GameError> for MainState {
             0.001,
             graphics::Color::WHITE,
         )?;
-        graphics::draw(ctx, &circulo, (Vec2::new(200.0, 380.0),))?;
+        graphics::draw(ctx, &circulo, (Vec2::new(self.circulo_x, 380.0),))?;
 
         graphics::present(ctx)?;
         Ok(())
