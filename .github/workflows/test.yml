@@ -35,7 +35,6 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-          target: x86_64-pc-windows-gnu
           components: clippy, rustfmt
       
       - name: Revisão automatizada de código (Linter)
@@ -46,21 +45,70 @@ jobs:
       
       - name: Testes unitários
         run: cargo test
+  
+  build-linux:
+    runs-on: ubuntu-latest
+    needs: [test]
+
+    steps:
+      - name: Instalação de dependências
+        run: sudo apt update && sudo apt install libasound2-dev libudev-dev pkg-config
+
+      - name: Cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       
-      - name: Compilação (Linux)
+      - name: Checkout do repositório
+        uses: actions/checkout@v2
+
+      - name: Instalação da toolchain de Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          components: clippy, rustfmt
+      
+      - name: Compilação
         run: cargo build
       
-      - name: Upload de artefatos (Linux)
+      - name: Upload de artefatos
         uses: actions/upload-artifact@v2
         with:
           name: linux_debug
           path: ./target/debug/sonic-platformer
+
+  build-windows:
+    runs-on: windows-latest
+    needs: [test]
+
+    steps:
+      - name: Cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       
-      - name: Compilação (Windows/MinGW)
-        run: cargo build --target x86_64-pc-windows-gnu
+      - name: Checkout do repositório
+        uses: actions/checkout@v2
+
+      - name: Instalação da toolchain de Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          components: clippy, rustfmt
       
-      - name: Upload de artefatos (Windows/MinGW)
+      - name: Compilação
+        run: cargo build
+      
+      - name: Upload de artefatos
         uses: actions/upload-artifact@v2
         with:
           name: windows_debug
-          path: ./target/x86_64-pc-windows-gnu/debug/sonic-platformer.exe
+          path: ./target/debug/sonic-platformer.exe
