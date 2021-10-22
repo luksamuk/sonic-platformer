@@ -3,6 +3,8 @@ use ggez::graphics;
 use ggez::{Context, GameResult};
 use glam::*;
 
+mod objects;
+
 struct MainState {
     circulo_x: f32,
 }
