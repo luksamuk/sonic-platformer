@@ -1,12 +1,15 @@
+use ggez::graphics::MeshBuilder;
 use ggez::graphics::{self, Text};
 use ggez::graphics::{Color, PxScale, TextFragment};
 use ggez::Context;
 use ggez::GameResult;
+use glam::*;
 
 pub struct TitleScreenDrawSystem {
     title: TextFragment,
     play: TextFragment,
     settings: TextFragment,
+    selection: u8, // TODO: offload to a proper entity in ECS
 }
 
 impl TitleScreenDrawSystem {
@@ -20,10 +23,12 @@ impl TitleScreenDrawSystem {
         let settings = TextFragment::new("Settings")
             .color(Color::WHITE)
             .scale(PxScale::from(24.0));
+        let selection = 0;
         Self {
             title,
             play,
             settings,
+            selection,
         }
     }
 
@@ -68,9 +73,33 @@ impl TitleScreenDrawSystem {
             (screen_height / 2.0) - (settings_height / 2.0) + title_height + play_height,
         ];
 
+        let selection_mesh = MeshBuilder::new()
+            .triangles(
+                &[
+                    glam::vec2(0.0, 0.0),
+                    glam::vec2(0.0, 10.0),
+                    glam::vec2(10.0, 5.0),
+                ],
+                Color::WHITE,
+            )?
+            .build(context)?;
+
+        let selection_position = glam::vec2(
+            (screen_width / 2.0) - (settings_width / 2.0) - 30.0,
+            (screen_height / 2.0) - (play_height / 2.0)
+                + title_height
+                + 5.0
+                + (self.selection as f32 * 25.0),
+        );
+
         graphics::queue_text(context, &title, title_destination, None);
         graphics::queue_text(context, &play, play_destination, None);
         graphics::queue_text(context, &settings, settings_destination, None);
+        graphics::draw(
+            context,
+            &selection_mesh,
+            (selection_position, 0.0, Color::WHITE),
+        )?;
 
         Ok(())
     }
