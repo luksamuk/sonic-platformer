@@ -5,14 +5,14 @@ use ggez::Context;
 use ggez::GameResult;
 use glam::*;
 
-pub struct TitleScreenDrawSystem {
+pub struct TitleScreenSystem {
     title: TextFragment,
     play: TextFragment,
     settings: TextFragment,
     selection: u8, // TODO: offload to a proper entity in ECS
 }
 
-impl TitleScreenDrawSystem {
+impl TitleScreenSystem {
     pub fn new(game_title: &str) -> Self {
         let title = TextFragment::new(game_title)
             .color(Color::WHITE)
@@ -32,7 +32,11 @@ impl TitleScreenDrawSystem {
         }
     }
 
-    pub fn run(&self, context: &mut Context) -> GameResult {
+    pub fn update(&mut self, context: &mut Context) -> GameResult {
+        Ok(())
+    }
+
+    pub fn draw(&self, context: &mut Context) -> GameResult {
         let title = Text::new(self.title.clone());
         let play = Text::new(self.play.clone());
         let settings = Text::new(self.settings.clone());
