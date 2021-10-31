@@ -1,8 +1,8 @@
 mod draw_states;
-mod draw_systems;
+mod screen_systems;
 
 use draw_states::navigation::Navigation;
-use draw_systems::DrawSystems;
+use screen_systems::ScreenSystems;
 use ggez::event::EventHandler;
 use ggez::graphics::{self, Color};
 use ggez::{Context, GameError, GameResult};
@@ -10,16 +10,16 @@ use ggez::{Context, GameError, GameResult};
 
 pub struct MainState {
     navigation: Navigation,
-    draw_systems: DrawSystems,
+    screen_systems: ScreenSystems,
 }
 
 impl MainState {
     pub fn new(game_name: &'static str) -> GameResult<Self> {
         let navigation = Navigation::default();
-        let draw_systems = DrawSystems::new(game_name);
+        let screen_systems = ScreenSystems::new(game_name);
         Ok(Self {
             navigation,
-            draw_systems,
+            screen_systems,
         })
     }
 
@@ -29,13 +29,13 @@ impl MainState {
 }
 
 impl EventHandler<GameError> for MainState {
-    fn update(&mut self, _ctx: &mut Context) -> GameResult {
-        Ok(())
+    fn update(&mut self, ctx: &mut Context) -> GameResult {
+        self.screen_systems.update(ctx, &self.navigation)
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult {
         graphics::clear(ctx, Color::BLACK);
-        self.draw_systems.run(ctx, &self.navigation)?;
+        self.screen_systems.draw(ctx, &self.navigation)?;
         graphics::present(ctx)
     }
 }
