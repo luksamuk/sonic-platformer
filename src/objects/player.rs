@@ -1,3 +1,5 @@
+use super::sprite_sheet::*;
+
 /// Represents the player's speed constants.
 pub struct PlayerConstants {
     /// Ground acceleration
@@ -51,4 +53,28 @@ impl PlayerConstants {
     }
 }
 
+pub struct Player {
+    constants: PlayerConstants,
+    animator: Animator,
+}
 
+impl Default for Player {
+    fn default() -> Self {
+        use crate::build_animator;
+        Self {
+            constants: Default::default(),
+            animator: build_animator!(
+                ("idle",   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 3, 4, 4]),
+                ("walk",   [5, 6, 7, 8, 9, 10]),
+                ("run",    [11, 12, 13, 14]),
+                ("roll",   [15, 16, 17, 16, 19, 16, 21, 16]),
+                ("skid",   [23]),
+                ("peel",   [24, 25, 26, 27]),
+                ("push",   [28, 29, 30, 31]),
+                ("crouch", [32]),
+                ("lookup", [33]),
+                ("dead",   [34]),
+            ),
+        }
+    }
+}
