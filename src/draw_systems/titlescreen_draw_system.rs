@@ -1,0 +1,77 @@
+use ggez::graphics::{self, Text};
+use ggez::graphics::{Color, PxScale, TextFragment};
+use ggez::Context;
+use ggez::GameResult;
+
+pub struct TitleScreenDrawSystem {
+    title: TextFragment,
+    play: TextFragment,
+    settings: TextFragment,
+}
+
+impl TitleScreenDrawSystem {
+    pub fn new(game_title: &str) -> Self {
+        let title = TextFragment::new(game_title)
+            .color(Color::WHITE)
+            .scale(PxScale::from(72.0));
+        let play = TextFragment::new("Play")
+            .color(Color::WHITE)
+            .scale(PxScale::from(24.0));
+        let settings = TextFragment::new("Settings")
+            .color(Color::WHITE)
+            .scale(PxScale::from(24.0));
+        Self {
+            title,
+            play,
+            settings,
+        }
+    }
+
+    pub fn run(&self, context: &mut Context) -> GameResult {
+        let title = Text::new(self.title.clone());
+        let play = Text::new(self.play.clone());
+        let settings = Text::new(self.settings.clone());
+
+        // Widths and heights for screen and the three texts
+        let (screen_width, screen_height) = {
+            let rect = graphics::screen_coordinates(context);
+            (rect.w, rect.h)
+        };
+
+        let (title_width, title_height) = {
+            let rect = title.dimensions(context);
+            (rect.w, rect.h)
+        };
+
+        let (play_width, play_height) = {
+            let rect = play.dimensions(context);
+            (rect.w, rect.h)
+        };
+
+        let (settings_width, settings_height) = {
+            let rect = settings.dimensions(context);
+            (rect.w, rect.h)
+        };
+
+        let title_destination = [
+            (screen_width / 2.0) - (title_width / 2.0),
+            (screen_height / 2.0) - title_height,
+        ];
+
+        let play_destination = [
+            (screen_width / 2.0) - (play_width / 2.0),
+            (screen_height / 2.0) - (play_height / 2.0) + title_height,
+        ];
+
+        let settings_destination = [
+            (screen_width / 2.0) - (settings_width / 2.0),
+            (screen_height / 2.0) - (settings_height / 2.0) + title_height + play_height,
+        ];
+
+        graphics::queue_text(context, &title, title_destination, None);
+        graphics::queue_text(context, &play, play_destination, None);
+        graphics::queue_text(context, &settings, settings_destination, None);
+
+        Ok(())
+    }
+}
