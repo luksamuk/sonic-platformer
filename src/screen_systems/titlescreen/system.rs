@@ -1,15 +1,16 @@
-use ggez::graphics::MeshBuilder;
+use super::objects;
+use crate::Input;
 use ggez::graphics::{self, Text};
 use ggez::graphics::{Color, PxScale, TextFragment};
 use ggez::Context;
 use ggez::GameResult;
-use glam::*;
+use legion::*;
 
 pub struct TitleScreenSystem {
     title: TextFragment,
     play: TextFragment,
     settings: TextFragment,
-    selection: u8, // TODO: offload to a proper entity in ECS
+    world: World,
 }
 
 impl TitleScreenSystem {
@@ -23,17 +24,27 @@ impl TitleScreenSystem {
         let settings = TextFragment::new("Settings")
             .color(Color::WHITE)
             .scale(PxScale::from(24.0));
-        let selection = 0;
+
+        let mut world = World::default();
+        let _ = world.push((
+            objects::Marker {
+                num_options: 2,
+                draw_step: 25.0,
+            },
+            objects::Position::default(),
+            objects::Tag::default(),
+        ));
+
         Self {
             title,
             play,
             settings,
-            selection,
+            world,
         }
     }
 
-    pub fn update(&mut self, context: &mut Context) -> GameResult {
-        Ok(())
+    pub fn update(&mut self, input: &Input) -> GameResult {
+        objects::Marker::update(&mut self.world, input)
     }
 
     pub fn draw(&self, context: &mut Context) -> GameResult {
@@ -77,33 +88,16 @@ impl TitleScreenSystem {
             (screen_height / 2.0) - (settings_height / 2.0) + title_height + play_height,
         ];
 
-        let selection_mesh = MeshBuilder::new()
-            .triangles(
-                &[
-                    glam::vec2(0.0, 0.0),
-                    glam::vec2(0.0, 10.0),
-                    glam::vec2(10.0, 5.0),
-                ],
-                Color::WHITE,
-            )?
-            .build(context)?;
-
-        let selection_position = glam::vec2(
+        let selection_hotspot = glam::vec2(
             (screen_width / 2.0) - (settings_width / 2.0) - 30.0,
-            (screen_height / 2.0) - (play_height / 2.0)
-                + title_height
-                + 5.0
-                + (self.selection as f32 * 25.0),
+            (screen_height / 2.0) - (play_height / 2.0) + title_height + 5.0,
         );
 
         graphics::queue_text(context, &title, title_destination, None);
         graphics::queue_text(context, &play, play_destination, None);
         graphics::queue_text(context, &settings, settings_destination, None);
-        graphics::draw(
-            context,
-            &selection_mesh,
-            (selection_position, 0.0, Color::WHITE),
-        )?;
+
+        objects::Marker::draw(&self.world, context, selection_hotspot)?;
 
         Ok(())
     }

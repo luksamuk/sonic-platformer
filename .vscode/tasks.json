@@ -2,6 +2,21 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
+			"type": "shell",
+			"command": "cargo",
+			"args": [
+				"clippy",
+				"--",
+				"-D",
+				"clippy::all"
+			],
+			"problemMatcher": [
+				"$rustc"
+			],
+			"group": "build",
+			"label": "Rust: cargo clippy - sonic-platformer"
+		},
+		{
 			"type": "cargo",
 			"subcommand": "check",
 			"problemMatcher": [

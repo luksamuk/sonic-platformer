@@ -9,3 +9,4 @@ edition = "2018"
 ggez = "0.6.1"
 glam = {version = "0.19.0", features = ["mint"]}
 mint = "0.5"
+legion = "0.4.0"
