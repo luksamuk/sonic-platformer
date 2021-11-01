@@ -17,10 +17,15 @@ impl ScreenSystems {
         Self { title_screen }
     }
 
-    pub fn update(&mut self, _context: &mut Context, navigation: &Navigation, input: &Input) -> GameResult {
+    pub fn update(
+        &mut self,
+        _context: &mut Context,
+        navigation: &Navigation,
+        input: &Input,
+    ) -> GameResult {
         match navigation {
             Navigation::TitleScreen => self.title_screen.update(input)?,
-            Navigation::Settings => {},
+            Navigation::Settings => {}
         };
         Ok(())
     }
@@ -28,7 +33,7 @@ impl ScreenSystems {
     pub fn draw(&self, context: &mut Context, navigation: &Navigation) -> GameResult {
         match navigation {
             Navigation::TitleScreen => self.title_screen.draw(context)?,
-            Navigation::Settings => {},
+            Navigation::Settings => {}
         };
 
         graphics::draw_queued_text(context, DrawParam::new(), None, FilterMode::Linear)?;

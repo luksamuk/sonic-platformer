@@ -5,6 +5,20 @@
 			"type": "shell",
 			"command": "cargo",
 			"args": [
+				"fmt",
+				"--",
+				"--check"
+			],
+			"problemMatcher": [
+				"$rustc"
+			],
+			"group": "build",
+			"label": "Rust: cargo fmt check - sonic-platformer"
+		},
+		{
+			"type": "shell",
+			"command": "cargo",
+			"args": [
 				"clippy",
 				"--",
 				"-D",
