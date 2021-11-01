@@ -45,50 +45,6 @@ jobs:
 
       - name: Testes unitários
         run: cargo test
-  
-  code-coverage:
-    runs-on: ubuntu-latest
-    needs: [test]
-    steps:
-      - name: Instalação de dependências
-        run: sudo apt update && sudo apt install libasound2-dev libudev-dev pkg-config
-
-      - name: Cache
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      
-      - name: Checkout do repositório
-        uses: actions/checkout@v2
-
-      - name: Instalação da toolchain de Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: nightly
-          override: true
-      
-      - name: Testes unitários
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --all-features --no-fail-fast
-        env:
-          CARGO_INCREMENTAL: '0'
-          RUSTFLAGS: '-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Zpanic_abort_tests'
-          RUSTDOCFLAGS: '-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Zpanic_abort_tests'
-
-      - name: Generação de estatísticas de cobertura de código
-        uses: actions-rs/grcov@v0.1
-      
-      - name: Upload de estatísticas para o Coveralls.io
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          path-to-lcov: ./lcov.info
 
   build-linux:
     runs-on: ubuntu-latest
