@@ -2240,7 +2240,7 @@ dependencies = [
 
 [[package]]
 name = "sonic-platformer"
-version = "0.0.1"
+version = "0.0.2"
 dependencies = [
  "ggez",
  "glam 0.19.0",
