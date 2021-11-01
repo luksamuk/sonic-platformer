@@ -1,3 +1,6 @@
+#![allow(dead_code)]
+#![allow(unused_imports)]
+
 use ggez::{
     conf::{FullscreenType, WindowMode, WindowSetup},
     event, ContextBuilder, GameResult,

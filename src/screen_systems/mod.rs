@@ -1,10 +1,11 @@
-mod titlescreen_system;
+mod titlescreen;
 
+use crate::Input;
 use crate::Navigation;
 use ggez::graphics::{self, DrawParam, FilterMode};
 use ggez::Context;
 use ggez::GameResult;
-pub use titlescreen_system::TitleScreenSystem;
+pub use titlescreen::system::TitleScreenSystem;
 
 pub struct ScreenSystems {
     title_screen: TitleScreenSystem,
@@ -16,9 +17,9 @@ impl ScreenSystems {
         Self { title_screen }
     }
 
-    pub fn update(&mut self, context: &mut Context, navigation: &Navigation) -> GameResult {
+    pub fn update(&mut self, _context: &mut Context, navigation: &Navigation, input: &Input) -> GameResult {
         match navigation {
-            Navigation::TitleScreen => self.title_screen.update(context)?,
+            Navigation::TitleScreen => self.title_screen.update(input)?,
             Navigation::Settings => {},
         };
         Ok(())
