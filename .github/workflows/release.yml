@@ -107,7 +107,7 @@ jobs:
           components: clippy, rustfmt
 
       - name: Compilação de Versão
-        run: cargo rustc --release -- -Clink-args="/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup"
+        run: cargo rustc --release --bin sonic-platformer -- -Clink-args="/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup"
       
       - name: Compactação de artefatos
         uses: papeloto/action-zip@v1
