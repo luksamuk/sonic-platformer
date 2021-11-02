@@ -1,13 +1,13 @@
 mod draw_states;
 mod input;
-mod screen_systems;
 mod objects;
+mod screen_systems;
 
-use ggez::timer;
 use draw_states::navigation::Navigation;
 use ggez::event::EventHandler;
 use ggez::event::{KeyCode, KeyMods};
 use ggez::graphics::{self, Color};
+use ggez::timer;
 use ggez::{Context, GameError, GameResult};
 use input::*;
 use screen_systems::ScreenSystems;

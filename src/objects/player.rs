@@ -98,7 +98,7 @@ impl Player {
             PlayerConstants::default()
         };
 
-        let position = Position::new(50.0, 50.0);
+        let position = Position::new(427.0, 240.0);
         let speed = PlayerSpeed::default();
         let mut animation_data = AnimatorData::new(context, "/sprites/sonic.png")?;
         animation_data.with_data(&[
@@ -109,17 +109,19 @@ impl Player {
                     3, 3, 4, 4,
                 ],
                 true,
+                26,
+                125,
             ),
-            ("walk", &[5, 6, 7, 8, 9, 10], true),
-            ("run", &[11, 12, 13, 14], true),
-            ("roll", &[15, 16, 17, 16, 19, 16, 21, 16], true),
-            ("skid", &[23], true),
-            ("peel", &[24, 25, 26, 27], true),
-            ("push", &[28, 29, 30, 31], true),
-            ("crouch", &[32], true),
-            ("lookup", &[33], true),
-            ("dead", &[34], true),
-        ]);
+            ("walk", &[5, 6, 7, 8, 9, 10], true, 0, 125),
+            ("run", &[11, 12, 13, 14], true, 0, 63),
+            ("roll", &[15, 16, 17, 16, 19, 16, 21, 16], true, 0, 125),
+            ("skid", &[23], true, 0, 1000),
+            ("peel", &[24, 25, 26, 27], true, 0, 60),
+            ("push", &[28, 29, 30, 31], true, 0, 500),
+            ("crouch", &[32], true, 0, 1000),
+            ("lookup", &[33], true, 0, 1000),
+            ("dead", &[34], true, 0, 1000),
+        ])?;
         let mut animator = Animator::default();
         animator.set("idle".to_string());
 
@@ -145,6 +147,24 @@ impl Player {
                 }
             }
             position.0.x += speed.xsp;
+        }
+        Ok(())
+    }
+
+    pub fn animation_update(world: &mut World, /*temporary*/ input: &Input) -> GameResult {
+        use crate::input::InputButton;
+        use crate::objects::animation::Animator;
+        let mut query = <(&PlayerSpeed, &mut Animator)>::query();
+        for (_speed, animator) in query.iter_mut(world) {
+            let animations = vec![
+                "idle", "walk", "run", "roll", "skid", "peel", "push", "crouch", "lookup", "dead",
+            ];
+            if input.pressed(InputButton::Start) {
+                let current = animator.get();
+                let idx = animations.iter().position(|&r| r == current).unwrap_or(0);
+                let next = (idx + 1) % animations.len();
+                animator.set(animations[next].to_string());
+            }
         }
         Ok(())
     }

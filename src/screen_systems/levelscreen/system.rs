@@ -1,9 +1,9 @@
-use legion::*;
 use crate::input::Input;
-use ggez::{Context, GameResult};
+use crate::objects::animation::*;
 use crate::objects::general::*;
 use crate::objects::player::*;
-use crate::objects::animation::*;
+use ggez::{Context, GameResult};
+use legion::*;
 
 pub struct LevelScreenSystem {
     world: World,
@@ -11,8 +11,7 @@ pub struct LevelScreenSystem {
 
 impl LevelScreenSystem {
     pub fn new() -> Self {
-        let mut world = World::default();
-
+        let world = World::default();
         Self { world }
     }
 
@@ -23,6 +22,7 @@ impl LevelScreenSystem {
 
     pub fn update(&mut self, input: &Input) -> GameResult {
         // Update players
+        Player::animation_update(&mut self.world, input)?;
         Player::physics_update(&mut self.world, input)?;
 
         // Update all animated sprites
@@ -30,7 +30,6 @@ impl LevelScreenSystem {
         for (data, animator) in query.iter_mut(&mut self.world) {
             animator.update(data);
         }
-        
         Ok(())
     }
 

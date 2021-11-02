@@ -1,11 +1,11 @@
 use super::objects;
+use crate::objects::general::{Position, Tag};
 use crate::Input;
 use ggez::graphics::{self, Text};
 use ggez::graphics::{Color, PxScale, TextFragment};
 use ggez::Context;
 use ggez::GameResult;
 use legion::*;
-use crate::objects::general::{Position, Tag};
 
 pub struct TitleScreenSystem {
     title: TextFragment,
@@ -26,8 +26,7 @@ impl TitleScreenSystem {
             .color(Color::WHITE)
             .scale(PxScale::from(24.0));
 
-        let mut world = World::default();
-        
+        let world = World::default();
         Self {
             title,
             play,
@@ -36,7 +35,7 @@ impl TitleScreenSystem {
         }
     }
 
-    pub fn setup(&mut self, context: &mut Context) -> GameResult {
+    pub fn setup(&mut self, _context: &mut Context) -> GameResult {
         let _ = self.world.push((
             objects::Marker {
                 num_options: 2,
@@ -44,7 +43,7 @@ impl TitleScreenSystem {
             },
             Position::default(),
             Tag::default(),
-        ));        
+        ));
 
         Ok(())
     }
