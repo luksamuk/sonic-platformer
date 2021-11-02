@@ -14,3 +14,9 @@ pub struct Tag(pub u64);
 #[derive(Default, Clone, Copy, Debug, PartialEq)]
 pub struct Position(pub Vec2);
 
+impl Position {
+    /// Create new position from specific point
+    pub fn new(x: f32, y: f32) -> Self {
+        Self(Vec2::new(x, y))
+    }
+}

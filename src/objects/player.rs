@@ -1,7 +1,7 @@
-use ggez::{Context, GameResult};
-use legion::{Entity, IntoQuery, World};
 use crate::input::Input;
+use ggez::{Context, GameResult};
 use glam::*;
+use legion::{Entity, IntoQuery, World};
 
 /// Represents the player's speed constants.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -98,13 +98,16 @@ impl Player {
             PlayerConstants::default()
         };
 
-        let position = Position::default();
+        let position = Position::new(50.0, 50.0);
         let speed = PlayerSpeed::default();
         let mut animation_data = AnimatorData::new(context, "/sprites/sonic.png")?;
         animation_data.with_data(&[
             (
                 "idle",
-                &[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 3, 4, 4],
+                &[
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2,
+                    3, 3, 4, 4,
+                ],
                 true,
             ),
             ("walk", &[5, 6, 7, 8, 9, 10], true),
@@ -126,8 +129,8 @@ impl Player {
     }
 
     pub fn physics_update(world: &mut World, input: &Input) -> GameResult {
-        use crate::objects::general::*;
         use crate::input::InputButton;
+        use crate::objects::general::*;
         let mut query = <(&PlayerConstants, &mut Position, &mut PlayerSpeed)>::query();
         for (constants, position, speed) in query.iter_mut(world) {
             if input.pressing(InputButton::Right) {
