@@ -5,12 +5,11 @@ use ggez::{
     conf::{FullscreenType, WindowMode, WindowSetup},
     event, ContextBuilder, GameResult,
 };
-use std::path::PathBuf;
-use std::env;
 use sonic_platformer::*;
+use std::env;
+use std::path::PathBuf;
 
 const GAME_NAME: &str = "Platformer";
-
 
 fn get_resource_dir() -> PathBuf {
     if let Ok(manifest_dir) = env::var("CARGO_MANIFEST_DIR") {
@@ -21,7 +20,6 @@ fn get_resource_dir() -> PathBuf {
         PathBuf::from("./resources")
     }
 }
-
 
 fn main() -> GameResult {
     let window_setup = WindowSetup::default().title(GAME_NAME).vsync(false);

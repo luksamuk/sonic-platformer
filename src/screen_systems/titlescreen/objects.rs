@@ -1,3 +1,4 @@
+use crate::objects::general::{Position, Tag};
 use crate::{Input, InputButton};
 use ggez::graphics::MeshBuilder;
 use ggez::graphics::{self, Color};
@@ -5,7 +6,6 @@ use ggez::Context;
 use ggez::GameResult;
 use glam::Vec2;
 use legion::{IntoQuery, World};
-use crate::objects::general::{Tag, Position};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Marker {

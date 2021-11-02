@@ -1,13 +1,14 @@
 use crate::objects::general::Position;
 use ggez::graphics::{self, DrawParam, Image, Rect};
-use ggez::{Context, GameResult};
+use ggez::{Context, GameError, GameResult};
 use glam::*;
 use std::collections::HashMap;
+use std::time::{Duration, Instant};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct AnimatorData {
     pub atlas: Image,
-    pub data: HashMap<String, (Vec<u32>, bool)>,
+    pub data: HashMap<String, (Vec<u32>, bool, usize, Duration)>,
 }
 
 impl AnimatorData {
@@ -19,44 +20,101 @@ impl AnimatorData {
             data: HashMap::new(),
         })
     }
-    pub fn add_animation(&mut self, name: &str, frames: &[u32], loops: bool) {
-        self.data
-            .insert(name.trim().to_owned(), (Vec::from(frames), loops));
+    pub fn add_animation(
+        &mut self,
+        name: &str,
+        frames: &[u32],
+        loops: bool,
+        loopback: usize,
+        millis_per_frame: u64,
+    ) -> GameResult {
+        if loops && loopback >= frames.len() {
+            Err(GameError::ConfigError(String::from(
+                "Animation loopback frame index must be valid",
+            )))
+        } else {
+            self.data.insert(
+                name.trim().to_owned(),
+                (
+                    Vec::from(frames),
+                    loops,
+                    loopback,
+                    Duration::from_millis(millis_per_frame),
+                ),
+            );
+            Ok(())
+        }
     }
 
-    pub fn with_data(&mut self, data_set: &[(&str, &[u32], bool)]) -> &Self {
+    pub fn with_data(
+        &mut self,
+        data_set: &[(&str, &[u32], bool, usize, u64)],
+    ) -> GameResult<&Self> {
         for data in data_set {
-            self.add_animation(data.0, data.1, data.2);
+            self.add_animation(data.0, data.1, data.2, data.3, data.4)?;
         }
-        self
+        Ok(self)
     }
 }
 
-#[derive(Default, Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Animator {
     animation_name: String,
     frame_count: usize,
     current_frame: u32,
+    last_update: Instant,
+}
+
+impl Default for Animator {
+    fn default() -> Self {
+        Animator {
+            animation_name: String::new(),
+            frame_count: 0,
+            current_frame: 0,
+            last_update: Instant::now(),
+        }
+    }
 }
 
 impl Animator {
+    pub fn get(&self) -> String {
+        self.animation_name.clone()
+    }
+
     pub fn set(&mut self, animation: String) {
         // Set new animation, but leave current frame intact.
         self.animation_name = animation.trim().to_string();
         self.frame_count = 0;
+        self.last_update = Instant::now();
     }
 
+    // TODO: Animation data should be refactored! Using tuples is too intricate now.
+    // TODO: Animation speed should be mutable, so we should fetch animation speed on
+    //       first frame maybe?
     pub fn update(&mut self, animdata: &AnimatorData) {
-        // TODO: Animation speed and loopback frame
         if let Some(data) = animdata.data.get(&self.animation_name) {
-            // Increment frame count and handle loop
-            self.frame_count = if data.1 {
-                (self.frame_count + 1) % data.0.len()
-            } else if self.frame_count > (data.0.len() - 1) {
-                data.0.len() - 1
-            } else {
-                self.frame_count + 1
-            };
+            let now = Instant::now();
+            let delta = (now - self.last_update) as Duration;
+            let frame_duration = data.3;
+            if delta > frame_duration {
+                let elapsed_frames = (delta.as_millis() / frame_duration.as_millis()) as usize;
+                self.last_update = now;
+                // Increment frame count and handle loop
+                self.frame_count = if data.1 {
+                    // If loops
+                    let new_frame = self.frame_count + elapsed_frames;
+                    if new_frame > data.0.len() - 1 {
+                        let extra_frames = new_frame - (data.0.len() - 1);
+                        data.2 + extra_frames - 1 // Loopback frame
+                    } else {
+                        new_frame
+                    }
+                } else if self.frame_count > (data.0.len() - 1) {
+                    data.0.len() - 1
+                } else {
+                    self.frame_count + elapsed_frames
+                };
+            }
             // Fetch animation frame number
             self.current_frame = *data.0.get(self.frame_count).unwrap_or(&0);
         }

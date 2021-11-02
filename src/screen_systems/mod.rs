@@ -1,13 +1,13 @@
-mod titlescreen;
 mod levelscreen;
+mod titlescreen;
 
 use crate::Input;
 use crate::Navigation;
 use ggez::graphics::{self, DrawParam, FilterMode};
 use ggez::Context;
 use ggez::GameResult;
-pub use titlescreen::system::TitleScreenSystem;
 pub use levelscreen::system::LevelScreenSystem;
+pub use titlescreen::system::TitleScreenSystem;
 
 pub struct ScreenSystems {
     title_screen: TitleScreenSystem,
@@ -18,7 +18,10 @@ impl ScreenSystems {
     pub fn new(game_title: &str) -> Self {
         let title_screen = TitleScreenSystem::new(game_title);
         let level_screen = LevelScreenSystem::new();
-        Self { title_screen, level_screen }
+        Self {
+            title_screen,
+            level_screen,
+        }
     }
 
     pub fn update(
