@@ -1,6 +1,7 @@
 mod draw_states;
 mod input;
 mod screen_systems;
+mod objects;
 
 use draw_states::navigation::Navigation;
 use ggez::event::EventHandler;
@@ -28,7 +29,8 @@ impl MainState {
         })
     }
 
-    pub fn setup(&mut self, _context: &mut Context) -> GameResult<()> {
+    pub fn setup(&mut self, context: &mut Context) -> GameResult {
+        self.screen_systems.setup(context)?;
         Ok(())
     }
 }
