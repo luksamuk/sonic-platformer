@@ -100,7 +100,8 @@ impl Player {
 
         let position = Position::new(427.0, 240.0);
         let speed = PlayerSpeed::default();
-        let mut animation_data = AnimatorData::new(context, "/sprites/sonic.png")?;
+        let mut animation_data =
+            AnimatorData::new(context, "/sprites/sonic.png", Vec2::new(60.0, 60.0))?;
         animation_data.with_data(&[
             (
                 "idle",
