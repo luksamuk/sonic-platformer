@@ -30,6 +30,7 @@ pub struct PlayerConstants {
 }
 
 impl Default for PlayerConstants {
+    /// Default constants for player. Relates to Sonic and Tails.
     fn default() -> Self {
         Self {
             acc: 0.046875,
@@ -48,6 +49,7 @@ impl Default for PlayerConstants {
 }
 
 impl PlayerConstants {
+    /// Default constants for player. Relates to Knuckles.
     pub fn default_knuckles() -> Self {
         Self {
             jmp: 6.0,
@@ -72,9 +74,19 @@ pub struct PlayerSpeed {
     pub gangle: f32,
 }
 
-pub struct Player {}
+/// Unit struct representing the player.
+///
+/// Exists only to hold a few utility functions related to player
+/// entities. A Player can actually be found by using a proper
+/// query on the ECS.
+pub struct Player;
 
 impl Player {
+    /// Create and push a player entity to the ECS world.
+    ///
+    /// This will also load player assets such as animation data
+    /// and sprites. You can also determine whether you want it
+    /// to use Knuckles-related constants or not.
     pub fn create(context: &mut Context, world: &mut World, knuckles: bool) -> GameResult<Entity> {
         use crate::objects::animation::*;
         use crate::objects::general::*;
@@ -105,6 +117,8 @@ impl Player {
             ("dead", &[34], true),
         ]);
         let animator = Animator::default();
+
+        // TODO: Collision, Physics!
 
         Ok(world.push((constants, position, speed, animation_data, animator)))
     }
