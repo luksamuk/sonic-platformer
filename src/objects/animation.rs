@@ -1,7 +1,8 @@
-use ggez::graphics::Image;
-use ggez::{Context, GameResult};
-use std::collections::HashMap;
 use crate::objects::general::Position;
+use ggez::graphics::{self, DrawParam, Image, Rect};
+use ggez::{Context, GameResult};
+use glam::*;
+use std::collections::HashMap;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct AnimatorData {
@@ -12,6 +13,7 @@ pub struct AnimatorData {
 impl AnimatorData {
     pub fn new(context: &mut Context, atlas_path: &str) -> GameResult<Self> {
         let atlas = Image::new(context, atlas_path)?;
+
         Ok(Self {
             atlas,
             data: HashMap::new(),
@@ -34,7 +36,7 @@ impl AnimatorData {
 pub struct Animator {
     animation_name: String,
     frame_count: usize,
-    pub current_frame: u32,
+    current_frame: u32,
 }
 
 impl Animator {
@@ -43,10 +45,11 @@ impl Animator {
         self.animation_name = animation.trim().to_string();
         self.frame_count = 0;
     }
-    
+
     pub fn update(&mut self, animdata: &AnimatorData) {
+        // TODO: Animation speed and loopback frame
         if let Some(data) = animdata.data.get(&self.animation_name) {
-            // Increment frame count and handle loop 
+            // Increment frame count and handle loop
             self.frame_count = if data.1 {
                 (self.frame_count + 1) % data.0.len()
             } else if self.frame_count > (data.0.len() - 1) {
@@ -59,10 +62,45 @@ impl Animator {
         }
     }
 
-    pub fn draw(&self, context: &mut Context, animdata: &AnimatorData, hotspot: &Position) -> GameResult {
-        if let Some(data) = animdata.data.get(&self.animation_name) {
-            todo!();
-            
+    pub fn calculate_frame(img_size: Vec2, frame_size: Vec2, frame_number: u32) -> Rect {
+        // TODO: Refactor using &self
+        let frames_per_line = img_size.x / frame_size.x;
+        let frame_line = (frame_number as f32 / frames_per_line).trunc();
+        let frame_column = frame_number as f32 % frames_per_line;
+
+        let frame_size_texels = frame_size / img_size;
+
+        Rect::new(
+            frame_column * frame_size_texels.x,
+            frame_line * frame_size_texels.y,
+            frame_size_texels.x,
+            frame_size_texels.y,
+        )
+    }
+
+    pub fn draw(
+        &self,
+        context: &mut Context,
+        animdata: &AnimatorData,
+        hotspot: &Position,
+    ) -> GameResult {
+        if let Some(_) = animdata.data.get(&self.animation_name) {
+            // TODO: outsource these to animator
+            let frame_size = Vec2::new(60.0, 60.0);
+            let image_size = Vec2::new(
+                animdata.atlas.width() as f32,
+                animdata.atlas.height() as f32,
+            );
+
+            let frame = Animator::calculate_frame(image_size, frame_size, self.current_frame);
+
+            let destination = hotspot.0 - (frame_size / 2.0);
+
+            let params = DrawParam::default()
+                .src(frame)
+                .scale(Vec2::new(1.0, 1.0))
+                .dest(destination);
+            graphics::draw(context, &animdata.atlas, params)?;
         }
         Ok(())
     }
