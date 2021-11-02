@@ -1,6 +1,7 @@
 use ggez::graphics::Image;
 use ggez::{Context, GameResult};
 use std::collections::HashMap;
+use crate::objects::general::Position;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct AnimatorData {
@@ -58,9 +59,11 @@ impl Animator {
         }
     }
 
-    pub fn draw(&self, animdata: &AnimatorData) {
+    pub fn draw(&self, context: &mut Context, animdata: &AnimatorData, hotspot: &Position) -> GameResult {
         if let Some(data) = animdata.data.get(&self.animation_name) {
             todo!();
+            
         }
+        Ok(())
     }
 }

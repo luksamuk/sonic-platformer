@@ -2,6 +2,7 @@
 
 pub enum Navigation {
     TitleScreen,
+    LevelScreen,
     Settings,
 }
 
