@@ -1,6 +1,9 @@
 use super::sprite_sheet::*;
+use ggez::{Context, GameResult};
+use legion::{Entity, World};
 
 /// Represents the player's speed constants.
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct PlayerConstants {
     /// Ground acceleration
     pub acc: f32,
@@ -29,17 +32,17 @@ pub struct PlayerConstants {
 impl Default for PlayerConstants {
     fn default() -> Self {
         Self {
-            acc:         0.046875,
-            dec:         0.5,
-            frc:         0.046875,
-            top:         6.0,
-            slp:         0.125,
-            slprollup:   0.078125,
+            acc: 0.046875,
+            dec: 0.5,
+            frc: 0.046875,
+            top: 6.0,
+            slp: 0.125,
+            slprollup: 0.078125,
             slprolldown: 0.3125,
-            fall:        2.5,
-            air:         0.09375,
-            jmp:         6.5,
-            grv:         0.21875,
+            fall: 2.5,
+            air: 0.09375,
+            jmp: 6.5,
+            grv: 0.21875,
         }
     }
 }
@@ -53,28 +56,56 @@ impl PlayerConstants {
     }
 }
 
-pub struct Player {
-    constants: PlayerConstants,
-    animator: Animator,
+/// Represents the speed variables for a player.
+///
+/// A player has specific variables to determine its transformation
+/// on air and on ground.
+#[derive(Default, Clone, Copy, Debug, PartialEq)]
+pub struct PlayerSpeed {
+    /// Horizontal speed
+    pub xsp: f32,
+    /// Vertical speed
+    pub ysp: f32,
+    /// Ground movement speed
+    pub gsp: f32,
+    /// Ground angle
+    pub gangle: f32,
 }
 
-impl Default for Player {
-    fn default() -> Self {
-        use crate::build_animator;
-        Self {
-            constants: Default::default(),
-            animator: build_animator!(
-                ("idle",   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 3, 4, 4]),
-                ("walk",   [5, 6, 7, 8, 9, 10]),
-                ("run",    [11, 12, 13, 14]),
-                ("roll",   [15, 16, 17, 16, 19, 16, 21, 16]),
-                ("skid",   [23]),
-                ("peel",   [24, 25, 26, 27]),
-                ("push",   [28, 29, 30, 31]),
-                ("crouch", [32]),
-                ("lookup", [33]),
-                ("dead",   [34]),
+pub struct Player {}
+
+impl Player {
+    pub fn create(context: &mut Context, world: &mut World, knuckles: bool) -> GameResult<Entity> {
+        use crate::objects::animation::*;
+        use crate::objects::general::*;
+        // Player constant values
+        let constants = if knuckles {
+            PlayerConstants::default_knuckles()
+        } else {
+            PlayerConstants::default()
+        };
+
+        let position = Position::default();
+        let speed = PlayerSpeed::default();
+        let mut animation_data = AnimatorData::new(context, "/sprites/sonic.png")?;
+        animation_data.with_data(&[
+            (
+                "idle",
+                &[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 3, 4, 4],
+                true,
             ),
-        }
+            ("walk", &[5, 6, 7, 8, 9, 10], true),
+            ("run", &[11, 12, 13, 14], true),
+            ("roll", &[15, 16, 17, 16, 19, 16, 21, 16], true),
+            ("skid", &[23], true),
+            ("peel", &[24, 25, 26, 27], true),
+            ("push", &[28, 29, 30, 31], true),
+            ("crouch", &[32], true),
+            ("lookup", &[33], true),
+            ("dead", &[34], true),
+        ]);
+        let animator = Animator::default();
+
+        Ok(world.push((constants, position, speed, animation_data, animator)))
     }
 }

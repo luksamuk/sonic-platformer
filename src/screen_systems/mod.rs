@@ -30,6 +30,11 @@ impl ScreenSystems {
         Ok(())
     }
 
+    pub fn setup(&mut self, context: &mut Context) -> GameResult {
+        self.title_screen.setup(context)?;
+        Ok(())
+    }
+
     pub fn draw(&self, context: &mut Context, navigation: &Navigation) -> GameResult {
         match navigation {
             Navigation::TitleScreen => self.title_screen.draw(context)?,

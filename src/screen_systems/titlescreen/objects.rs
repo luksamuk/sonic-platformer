@@ -5,21 +5,12 @@ use ggez::Context;
 use ggez::GameResult;
 use glam::Vec2;
 use legion::{IntoQuery, World};
+use crate::objects::general::{Tag, Position};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Marker {
-    pub num_options: u8,
+    pub num_options: u64,
     pub draw_step: f32,
-}
-
-#[derive(Default, Clone, Copy, Debug, PartialEq)]
-pub struct Position {
-    pub pos: Vec2,
-}
-
-#[derive(Default, Clone, Copy, Debug, PartialEq)]
-pub struct Tag {
-    pub tag: u8,
 }
 
 impl Marker {
@@ -27,17 +18,17 @@ impl Marker {
         let mut query = <(&Marker, &mut Tag, &mut Position)>::query();
         for (marker, tag, position) in query.iter_mut(world) {
             if input.pressed(InputButton::Down) {
-                tag.tag += 1;
+                tag.0 += 1;
             } else if input.pressed(InputButton::Up) {
-                tag.tag = if tag.tag == 0 {
+                tag.0 = if tag.0 == 0 {
                     marker.num_options - 1
                 } else {
-                    tag.tag - 1
+                    tag.0 - 1
                 };
             }
             // Adjust option to a valid one and setup draw position
-            tag.tag %= marker.num_options;
-            position.pos.y = tag.tag as f32 * marker.draw_step;
+            tag.0 %= marker.num_options;
+            position.0.y = tag.0 as f32 * marker.draw_step;
         }
         Ok(())
     }
@@ -55,7 +46,7 @@ impl Marker {
                     Color::WHITE,
                 )?
                 .build(context)?;
-            graphics::draw(context, &mesh, (hotspot + position.pos, 0.0, Color::WHITE))?;
+            graphics::draw(context, &mesh, (hotspot + position.0, 0.0, Color::WHITE))?;
         }
         Ok(())
     }

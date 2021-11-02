@@ -5,6 +5,7 @@ use ggez::graphics::{Color, PxScale, TextFragment};
 use ggez::Context;
 use ggez::GameResult;
 use legion::*;
+use crate::objects::general::{Position, Tag};
 
 pub struct TitleScreenSystem {
     title: TextFragment,
@@ -26,21 +27,28 @@ impl TitleScreenSystem {
             .scale(PxScale::from(24.0));
 
         let mut world = World::default();
-        let _ = world.push((
-            objects::Marker {
-                num_options: 2,
-                draw_step: 25.0,
-            },
-            objects::Position::default(),
-            objects::Tag::default(),
-        ));
-
+        
         Self {
             title,
             play,
             settings,
             world,
         }
+    }
+
+    pub fn setup(&mut self, context: &mut Context) -> GameResult {
+        let _ = self.world.push((
+            objects::Marker {
+                num_options: 2,
+                draw_step: 25.0,
+            },
+            Position::default(),
+            Tag::default(),
+        ));        
+
+        // Teste
+        crate::objects::player::Player::create(context, &mut self.world, false)?;
+        Ok(())
     }
 
     pub fn update(&mut self, input: &Input) -> GameResult {
