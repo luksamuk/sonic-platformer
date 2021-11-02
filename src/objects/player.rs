@@ -1,6 +1,7 @@
-use super::sprite_sheet::*;
 use ggez::{Context, GameResult};
-use legion::{Entity, World};
+use legion::{Entity, IntoQuery, World};
+use crate::input::Input;
+use glam::*;
 
 /// Represents the player's speed constants.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -116,10 +117,32 @@ impl Player {
             ("lookup", &[33], true),
             ("dead", &[34], true),
         ]);
-        let animator = Animator::default();
+        let mut animator = Animator::default();
+        animator.set("idle".to_string());
 
-        // TODO: Collision, Physics!
+        // TODO: Hitboxes?
 
         Ok(world.push((constants, position, speed, animation_data, animator)))
+    }
+
+    pub fn physics_update(world: &mut World, input: &Input) -> GameResult {
+        use crate::objects::general::*;
+        use crate::input::InputButton;
+        let mut query = <(&PlayerConstants, &mut Position, &mut PlayerSpeed)>::query();
+        for (constants, position, speed) in query.iter_mut(world) {
+            if input.pressing(InputButton::Right) {
+                speed.xsp += constants.acc;
+            } else if input.pressing(InputButton::Left) {
+                speed.xsp -= constants.acc;
+            } else {
+                if speed.xsp.abs() > constants.dec {
+                    speed.xsp -= constants.dec * speed.xsp.signum();
+                } else {
+                    speed.xsp = 0.0
+                }
+            }
+            position.0.x += speed.xsp;
+        }
+        Ok(())
     }
 }

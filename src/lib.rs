@@ -19,7 +19,8 @@ pub struct MainState {
 
 impl MainState {
     pub fn new(game_name: &'static str) -> GameResult<Self> {
-        let navigation = Navigation::default();
+        //let navigation = Navigation::default();
+        let navigation = Navigation::LevelScreen;
         let screen_systems = ScreenSystems::new(game_name);
         let input = Input::default();
         Ok(Self {

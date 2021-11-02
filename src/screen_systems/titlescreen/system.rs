@@ -46,8 +46,6 @@ impl TitleScreenSystem {
             Tag::default(),
         ));        
 
-        // Teste
-        crate::objects::player::Player::create(context, &mut self.world, false)?;
         Ok(())
     }
 
