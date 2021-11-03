@@ -86,6 +86,7 @@ pub struct Animator {
     current_frame: u32,
     last_update: Instant,
     pub direction: AnimationDirection,
+    scale: f32,
 }
 
 impl Default for Animator {
@@ -96,12 +97,13 @@ impl Default for Animator {
             current_frame: 0,
             last_update: Instant::now(),
             direction: AnimationDirection::Right,
+            scale: 1.0,
         }
     }
 }
 
 impl Animator {
-    pub fn get(&self) -> String {
+    pub fn get_name(&self) -> String {
         self.animation_name.clone()
     }
 
@@ -170,15 +172,16 @@ impl Animator {
         if let Some(_) = animdata.data.get(&self.animation_name) {
             let frame = self.calculate_frame(animdata.get_image_size(), animdata.frame_size);
             let floatdir: f32 = self.direction.into();
+            let xscale = floatdir * self.scale;
             let half_frame = Vec2::new(
-                (animdata.frame_size.x / 2.0) * floatdir,
-                animdata.frame_size.y / 2.0,
+                (animdata.frame_size.x / 2.0) * xscale,
+                (animdata.frame_size.y / 2.0) * self.scale,
             );
             let destination = hotspot.0 - half_frame;
 
             let params = DrawParam::default()
                 .src(frame)
-                .scale(Vec2::new(floatdir, 1.0))
+                .scale(Vec2::new(xscale, self.scale))
                 .dest(destination);
             graphics::draw(context, &animdata.atlas, params)?;
         }
