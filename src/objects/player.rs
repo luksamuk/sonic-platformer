@@ -136,9 +136,11 @@ impl Player {
         use crate::objects::general::*;
         let mut query = <(&PlayerConstants, &mut Position, &mut PlayerSpeed)>::query();
         for (constants, position, speed) in query.iter_mut(world) {
-            if input.pressing(InputButton::Right) {
+            let right = input.pressing(InputButton::Right);
+            let left  = input.pressing(InputButton::Left);
+            if right && !left {
                 speed.xsp += constants.acc;
-            } else if input.pressing(InputButton::Left) {
+            } else if left && !right {
                 speed.xsp -= constants.acc;
             } else {
                 if speed.xsp.abs() > constants.dec {
