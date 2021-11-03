@@ -64,12 +64,28 @@ impl AnimatorData {
     }
 }
 
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum AnimationDirection {
+    Left,
+    Right,
+}
+
+impl Into<f32> for AnimationDirection {
+    fn into(self) -> f32 {
+        match self {
+            AnimationDirection::Left => -1.0,
+            AnimationDirection::Right => 1.0,
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct Animator {
     animation_name: String,
     frame_count: usize,
     current_frame: u32,
     last_update: Instant,
+    pub direction: AnimationDirection,
 }
 
 impl Default for Animator {
@@ -79,6 +95,7 @@ impl Default for Animator {
             frame_count: 0,
             current_frame: 0,
             last_update: Instant::now(),
+            direction: AnimationDirection::Right,
         }
     }
 }
@@ -90,9 +107,11 @@ impl Animator {
 
     pub fn set(&mut self, animation: String) {
         // Set new animation, but leave current frame intact.
-        self.animation_name = animation.trim().to_string();
-        self.frame_count = 0;
-        self.last_update = Instant::now();
+        if self.animation_name != animation {
+            self.animation_name = animation.trim().to_string();
+            self.frame_count = 0;
+            self.last_update = Instant::now();
+        }
     }
 
     // TODO: Animation data should be refactored! Using tuples is too intricate now.
@@ -150,12 +169,16 @@ impl Animator {
     ) -> GameResult {
         if let Some(_) = animdata.data.get(&self.animation_name) {
             let frame = self.calculate_frame(animdata.get_image_size(), animdata.frame_size);
-
-            let destination = hotspot.0 - (animdata.frame_size / 2.0);
+            let floatdir: f32 = self.direction.into();
+            let half_frame = Vec2::new(
+                (animdata.frame_size.x / 2.0) * floatdir,
+                animdata.frame_size.y / 2.0,
+            );
+            let destination = hotspot.0 - half_frame;
 
             let params = DrawParam::default()
                 .src(frame)
-                .scale(Vec2::new(1.0, 1.0))
+                .scale(Vec2::new(floatdir, 1.0))
                 .dest(destination);
             graphics::draw(context, &animdata.atlas, params)?;
         }

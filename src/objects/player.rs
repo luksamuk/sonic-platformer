@@ -98,7 +98,7 @@ impl Player {
             PlayerConstants::default()
         };
 
-        let position = Position::new(427.0, 240.0);
+        let position = Position::new(30.0, 240.0);
         let speed = PlayerSpeed::default();
         let mut animation_data =
             AnimatorData::new(context, "/sprites/sonic.png", Vec2::new(60.0, 60.0))?;
@@ -113,7 +113,7 @@ impl Player {
                 26,
                 125,
             ),
-            ("walk", &[5, 6, 7, 8, 9, 10], true, 0, 125),
+            ("walk", &[5, 6, 7, 8, 9, 10], true, 0, 100),
             ("run", &[11, 12, 13, 14], true, 0, 63),
             ("roll", &[15, 16, 17, 16, 19, 16, 21, 16], true, 0, 125),
             ("skid", &[23], true, 0, 1000),
@@ -156,17 +156,42 @@ impl Player {
 
     pub fn animation_update(world: &mut World, /*temporary*/ input: &Input) -> GameResult {
         use crate::input::InputButton;
-        use crate::objects::animation::Animator;
+        use crate::objects::animation::{Animator, AnimationDirection};
         let mut query = <(&PlayerSpeed, &mut Animator)>::query();
-        for (_speed, animator) in query.iter_mut(world) {
-            let animations = vec![
-                "idle", "walk", "run", "roll", "skid", "peel", "push", "crouch", "lookup", "dead",
-            ];
-            if input.pressed(InputButton::Start) {
-                let current = animator.get();
-                let idx = animations.iter().position(|&r| r == current).unwrap_or(0);
-                let next = (idx + 1) % animations.len();
-                animator.set(animations[next].to_string());
+        for (speed, animator) in query.iter_mut(world) {
+            let (up, down, left, right) = (
+                input.pressing(InputButton::Up),
+                input.pressing(InputButton::Down),
+                input.pressing(InputButton::Left),
+                input.pressing(InputButton::Right),
+            );
+
+            // TODO: Use proper gsp
+            // The assignment on physics_update kinda allows me to do that.
+            // Is this a good idea, then? No, it's stupid. But it'll suffice for now
+            let xsp = speed.xsp.abs();
+            animator.set(String::from(
+                if xsp == 0.0 {
+                    if up && !down {
+                        "lookup"         
+                    } else if !up && down {
+                        "crouch"
+                    } else {
+                        "idle"
+                    }
+                } else if xsp >= 9.95 {
+                    "peel"
+                } else if xsp >= 5.9 {
+                    "run"
+                } else {
+                    "walk"
+                }
+            ));
+
+            if left && !right {
+                animator.direction = AnimationDirection::Left;
+            } else if !left && right {
+                animator.direction = AnimationDirection::Right;
             }
         }
         Ok(())
