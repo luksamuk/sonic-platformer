@@ -20,6 +20,8 @@ pub struct PlayerConstants {
     pub slprollup: f32,
     /// Slope factor when rolling downhill
     pub slprolldown: f32,
+    /// Minimum absolute speed for applying slope factor (Sonic 3)
+    pub min_slp: f32,
     /// Tolerance ground speed for sticking to walls and ceilings
     pub fall: f32,
     /// Air acceleration, normally 2x [`acc`]
@@ -28,6 +30,8 @@ pub struct PlayerConstants {
     pub jmp: f32,
     /// Gravity
     pub grv: f32,
+    /// Minimum jump speed for when the jump button is released
+    pub minjmp: f32,
 }
 
 impl Default for PlayerConstants {
@@ -41,10 +45,12 @@ impl Default for PlayerConstants {
             slp: 0.125,
             slprollup: 0.078125,
             slprolldown: 0.3125,
+            min_slp: 0.05078125,
             fall: 2.5,
             air: 0.09375,
             jmp: 6.5,
             grv: 0.21875,
+            minjmp: -4.0,
         }
     }
 }
@@ -72,7 +78,21 @@ pub struct PlayerSpeed {
     /// Ground movement speed
     pub gsp: f32,
     /// Ground angle
-    pub gangle: f32,
+    pub angle: f32,
+}
+
+/// Represents the state variables for a player.
+/// 
+/// These variables refer mostly to state such as ground state and
+/// other information that does not involve transformations directly.
+#[derive(Default, Clone, Copy, Debug, PartialEq)]
+pub struct PlayerState {
+    /// Whether the player is on ground
+    pub ground: bool,
+    /// Whether the player has jumped
+    pub jumping: bool,
+    /// Whether the player is rolling
+    pub rolling: bool,
 }
 
 /// Unit struct representing the player.
@@ -91,13 +111,18 @@ impl Player {
     pub fn create(context: &mut Context, world: &mut World, knuckles: bool) -> GameResult<Entity> {
         use crate::objects::animation::*;
         use crate::objects::general::*;
-        // Player constant values
+
         let constants = if knuckles {
             PlayerConstants::default_knuckles()
         } else {
             PlayerConstants::default()
         };
 
+        //let state = PlayerState::default();
+        let state = PlayerState {
+            ground: true,
+            ..PlayerState::default()
+        };
         let position = Position::new(30.0, 240.0);
         let speed = PlayerSpeed::default();
         let mut animation_data =
@@ -128,28 +153,110 @@ impl Player {
 
         // TODO: Hitboxes?
 
-        Ok(world.push((constants, position, speed, animation_data, animator)))
+        Ok(world.push((state, constants, position, speed, animation_data, animator)))
     }
 
     pub fn physics_update(world: &mut World, input: &Input) -> GameResult {
         use crate::input::InputButton;
         use crate::objects::general::*;
-        let mut query = <(&PlayerConstants, &mut Position, &mut PlayerSpeed)>::query();
-        for (constants, position, speed) in query.iter_mut(world) {
+        let mut query = <(&mut PlayerState, &PlayerConstants, &mut Position, &mut PlayerSpeed)>::query();
+        for (state, constants, position, speed) in query.iter_mut(world) {
             let right = input.pressing(InputButton::Right);
             let left = input.pressing(InputButton::Left);
-            if right && !left {
-                speed.xsp += constants.acc;
-            } else if left && !right {
-                speed.xsp -= constants.acc;
-            } else {
-                if speed.xsp.abs() > constants.dec {
-                    speed.xsp -= constants.dec * speed.xsp.signum();
+
+            // Horizontal movement
+            if state.ground {
+                // Ground movement
+                if !left && right {
+                    speed.gsp +=
+                        if speed.gsp < 0.0 {
+                            // Decelerate if moving left
+                            constants.dec
+                        } else {
+                            // Accelerate otherwise
+                            constants.acc
+                        };
+                } else if left && !right {
+                    speed.gsp -=
+                        if speed.gsp > 0.0 {
+                            // Decelerate if moving right
+                            constants.dec
+                        } else {
+                            // Accelerate otherwise
+                            constants.acc
+                        }
                 } else {
-                    speed.xsp = 0.0
+                    // If not pressing any directionals, friction kicks in
+                    speed.gsp -= speed.gsp.abs().min(constants.frc) * speed.gsp.signum();
+                }
+
+                let angle_sin = speed.angle.sin();
+                let angle_cos = speed.angle.cos();
+
+                // Apply slope factor
+                if speed.gsp.abs() >= constants.min_slp {
+                    speed.gsp -= angle_sin * if state.rolling {
+                        if speed.gsp.signum() as i32 == angle_sin.signum() as i32  {
+                            constants.slprollup
+                        } else {
+                            constants.slprolldown
+                        }
+                    } else {
+                        constants.slp
+                    };
+                }
+
+                // Apply top speed
+                if speed.gsp.abs() >= constants.top {
+                    speed.gsp = constants.top * speed.gsp.signum();
+                }
+
+                // Transform x and Y speed accordingly
+                speed.xsp = speed.gsp * angle_cos;
+                speed.ysp = speed.gsp * -angle_sin;
+            } else {
+                // Air movement
+                speed.xsp +=
+                    if (right && !left) || (!right && left) {
+                        constants.air
+                    } else {
+                        0.0
+                    };
+            }
+
+            // Vertical movement
+            if !state.ground {
+                // Apply air drag
+                if (speed.ysp < 0.0) && (speed.ysp > constants.minjmp) {
+                    speed.xsp -= (speed.xsp % 0.125) / 256.0;
+                }
+
+                // Apply top speed
+                if speed.xsp.abs() >= constants.top {
+                    speed.xsp = constants.top * speed.xsp.signum();
+                }
+
+                // Apply gravity
+                speed.ysp += constants.grv;
+
+                // Apply jump cap
+                if !input.pressing(InputButton::A) && (speed.ysp < constants.minjmp) {
+                    speed.ysp = constants.minjmp;
+                }
+            } else {
+                // Perform jump.
+                // TODO: LANDING!
+                if input.pressed(InputButton::A) {
+                    state.ground = false;
+                    state.jumping = true;
+                    speed.xsp -= constants.jmp * speed.angle.sin();
+                    speed.ysp -= constants.jmp * speed.angle.cos();
                 }
             }
+
+            // Transform position
             position.0.x += speed.xsp;
+            position.0.y += speed.ysp;
         }
         Ok(())
     }
