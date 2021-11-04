@@ -1,4 +1,4 @@
-use crate::input::Input;
+use crate::input::{Input, InputButton};
 use crate::objects::animation::*;
 use crate::objects::general::*;
 use crate::objects::player::*;
@@ -21,7 +21,7 @@ impl LevelScreenSystem {
         Ok(())
     }
 
-    pub fn update(&mut self, _navigation: &mut Navigation, input: &Input) -> GameResult {
+    pub fn update(&mut self, navigation: &mut Navigation, input: &Input) -> GameResult {
         // Update players
         Player::animation_update(&mut self.world, input)?;
         Player::physics_update(&mut self.world, input)?;
@@ -31,6 +31,11 @@ impl LevelScreenSystem {
         for (data, animator) in query.iter_mut(&mut self.world) {
             animator.update(data);
         }
+
+        if input.pressed(InputButton::Back) {
+            *navigation = Navigation::TitleScreen;
+        }
+
         Ok(())
     }
 

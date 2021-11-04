@@ -30,10 +30,10 @@ impl Marker {
             // Adjust option to a valid one and setup draw position
             tag.0 %= marker.num_options;
             position.0.y = tag.0 as f32 * marker.draw_step;
-        }
 
-        if input.pressed(InputButton::Start) {
-            *navigation = Navigation::LevelScreen;
+            if (tag.0 == 0) && input.pressed(InputButton::Start) {
+                *navigation = Navigation::LevelScreen;
+            }
         }
 
         Ok(())
