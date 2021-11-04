@@ -1,9 +1,8 @@
-mod draw_states;
 mod input;
 mod objects;
 mod screen_systems;
 
-use draw_states::navigation::Navigation;
+use screen_systems::Navigation;
 use ggez::event::EventHandler;
 use ggez::event::{KeyCode, KeyMods};
 use ggez::graphics::{self, Color};
