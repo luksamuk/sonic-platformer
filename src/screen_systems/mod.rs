@@ -1,8 +1,9 @@
 mod levelscreen;
 mod titlescreen;
+mod navigation;
 
+pub use navigation::Navigation;
 use crate::Input;
-use crate::Navigation;
 use ggez::graphics::{self, DrawParam, FilterMode};
 use ggez::Context;
 use ggez::GameResult;
