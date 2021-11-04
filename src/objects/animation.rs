@@ -87,6 +87,7 @@ pub struct Animator {
     last_update: Instant,
     pub direction: AnimationDirection,
     scale: f32,
+    frame_duration: Duration,
 }
 
 impl Default for Animator {
@@ -98,6 +99,7 @@ impl Default for Animator {
             last_update: Instant::now(),
             direction: AnimationDirection::Right,
             scale: 1.0,
+            frame_duration: Duration::from_millis(16),
         }
     }
 }
@@ -107,13 +109,20 @@ impl Animator {
         self.animation_name.clone()
     }
 
-    pub fn set(&mut self, animation: String) {
+    pub fn set(&mut self, animation: String, animdata: &AnimatorData) {
         // Set new animation, but leave current frame intact.
         if self.animation_name != animation {
             self.animation_name = animation.trim().to_string();
             self.frame_count = 0;
             self.last_update = Instant::now();
+            if let Some(data) = animdata.data.get(&animation) {
+                self.frame_duration = data.3;
+            }
         }
+    }
+
+    pub fn set_duration(&mut self, duration: Duration) {
+        self.frame_duration = duration;
     }
 
     // TODO: Animation data should be refactored! Using tuples is too intricate now.
@@ -123,9 +132,8 @@ impl Animator {
         if let Some(data) = animdata.data.get(&self.animation_name) {
             let now = Instant::now();
             let delta = (now - self.last_update) as Duration;
-            let frame_duration = data.3;
-            if delta > frame_duration {
-                let elapsed_frames = (delta.as_millis() / frame_duration.as_millis()) as usize;
+            if delta > self.frame_duration {
+                let elapsed_frames = (delta.as_millis() / self.frame_duration.as_millis()) as usize;
                 self.last_update = now;
                 // Increment frame count and handle loop
                 self.frame_count = if data.1 {

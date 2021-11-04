@@ -149,7 +149,7 @@ impl Player {
             ("dead", &[34], true, 0, 1000),
         ])?;
         let mut animator = Animator::default();
-        animator.set("idle".to_string());
+        animator.set("idle".to_string(), &animation_data);
 
         // TODO: Hitboxes?
 
@@ -263,9 +263,9 @@ impl Player {
 
     pub fn animation_update(world: &mut World, /*temporary*/ input: &Input) -> GameResult {
         use crate::input::InputButton;
-        use crate::objects::animation::{AnimationDirection, Animator};
-        let mut query = <(&PlayerSpeed, &mut Animator)>::query();
-        for (speed, animator) in query.iter_mut(world) {
+        use crate::objects::animation::{AnimationDirection, Animator, AnimatorData};
+        let mut query = <(&PlayerState, &PlayerSpeed, &mut Animator, &AnimatorData)>::query();
+        for (state, speed, animator, animdata) in query.iter_mut(world) {
             let (up, down, left, right) = (
                 input.pressing(InputButton::Up),
                 input.pressing(InputButton::Down),
@@ -273,11 +273,10 @@ impl Player {
                 input.pressing(InputButton::Right),
             );
 
-            // TODO: Use proper gsp
             // The assignment on physics_update kinda allows me to do that.
             // Is this a good idea, then? No, it's stupid. But it'll suffice for now
-            let xsp = speed.xsp.abs();
-            animator.set(String::from(if xsp == 0.0 {
+            let gsp = speed.gsp.abs();
+            animator.set(String::from(if gsp == 0.0 {
                 if up && !down {
                     "lookup"
                 } else if !up && down {
@@ -285,13 +284,13 @@ impl Player {
                 } else {
                     "idle"
                 }
-            } else if xsp >= 9.95 {
+            } else if gsp >= 9.95 {
                 "peel"
-            } else if xsp >= 5.9 {
+            } else if gsp >= 5.9 {
                 "run"
             } else {
                 "walk"
-            }));
+            }), animdata);
 
             if left && !right {
                 animator.direction = AnimationDirection::Left;
