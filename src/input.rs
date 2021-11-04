@@ -9,6 +9,7 @@ pub enum InputButton {
     Right,
     Start,
     Back,
+    A,
 }
 
 #[derive(Default, Clone)]
@@ -19,6 +20,7 @@ pub struct InputState {
     pub right: bool,
     pub start: bool,
     pub back: bool,
+    pub a: bool,
 }
 
 #[derive(Default)]
@@ -40,6 +42,7 @@ impl Input {
             KeyCode::Right => self.current.right = state,
             KeyCode::Return => self.current.start = state,
             KeyCode::Escape => self.current.back = state,
+            KeyCode::Z => self.current.a = state,
             _ => {}
         }
     }
@@ -52,6 +55,7 @@ impl Input {
             InputButton::Right => self.current.right,
             InputButton::Start => self.current.start,
             InputButton::Back => self.current.back,
+            InputButton::A => self.current.a,
         }
     }
 
@@ -63,6 +67,7 @@ impl Input {
             InputButton::Right => self.current.right && !self.previous.right,
             InputButton::Start => self.current.start && !self.previous.start,
             InputButton::Back => self.current.back && !self.previous.back,
+            InputButton::A => self.current.a && !self.previous.a,
         }
     }
 }
