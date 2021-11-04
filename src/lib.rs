@@ -2,13 +2,13 @@ mod input;
 mod objects;
 mod screen_systems;
 
-use screen_systems::Navigation;
 use ggez::event::EventHandler;
 use ggez::event::{KeyCode, KeyMods};
 use ggez::graphics::{self, Color};
 use ggez::timer;
 use ggez::{Context, GameError, GameResult};
 use input::*;
+use screen_systems::Navigation;
 use screen_systems::ScreenSystems;
 
 const DESIRED_FPS: u32 = 60;
@@ -21,8 +21,7 @@ pub struct MainState {
 
 impl MainState {
     pub fn new(game_name: &'static str) -> GameResult<Self> {
-        //let navigation = Navigation::default();
-        let navigation = Navigation::LevelScreen;
+        let navigation = Navigation::default();
         let screen_systems = ScreenSystems::new(game_name);
         let input = Input::default();
         Ok(Self {
@@ -42,7 +41,7 @@ impl EventHandler<GameError> for MainState {
     fn update(&mut self, ctx: &mut Context) -> GameResult {
         while timer::check_update_time(ctx, DESIRED_FPS) {
             self.screen_systems
-                .update(ctx, &self.navigation, &self.input)?;
+                .update(ctx, &mut self.navigation, &self.input)?;
             self.input.post_update();
         }
         Ok(())

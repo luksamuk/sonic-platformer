@@ -1,4 +1,5 @@
 use crate::objects::general::{Position, Tag};
+use crate::screen_systems::Navigation;
 use crate::{Input, InputButton};
 use ggez::graphics::MeshBuilder;
 use ggez::graphics::{self, Color};
@@ -14,7 +15,7 @@ pub struct Marker {
 }
 
 impl Marker {
-    pub fn update(world: &mut World, input: &Input) -> GameResult {
+    pub fn update(world: &mut World, navigation: &mut Navigation, input: &Input) -> GameResult {
         let mut query = <(&Marker, &mut Tag, &mut Position)>::query();
         for (marker, tag, position) in query.iter_mut(world) {
             if input.pressed(InputButton::Down) {
@@ -30,6 +31,11 @@ impl Marker {
             tag.0 %= marker.num_options;
             position.0.y = tag.0 as f32 * marker.draw_step;
         }
+
+        if input.pressed(InputButton::Start) {
+            *navigation = Navigation::LevelScreen;
+        }
+
         Ok(())
     }
 

@@ -1,5 +1,6 @@
 use super::objects;
 use crate::objects::general::{Position, Tag};
+use crate::screen_systems::Navigation;
 use crate::Input;
 use ggez::graphics::{self, Text};
 use ggez::graphics::{Color, PxScale, TextFragment};
@@ -48,8 +49,8 @@ impl TitleScreenSystem {
         Ok(())
     }
 
-    pub fn update(&mut self, input: &Input) -> GameResult {
-        objects::Marker::update(&mut self.world, input)
+    pub fn update(&mut self, navigation: &mut Navigation, input: &Input) -> GameResult {
+        objects::Marker::update(&mut self.world, navigation, input)
     }
 
     pub fn draw(&self, context: &mut Context) -> GameResult {

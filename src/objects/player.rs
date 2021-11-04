@@ -137,7 +137,7 @@ impl Player {
         let mut query = <(&PlayerConstants, &mut Position, &mut PlayerSpeed)>::query();
         for (constants, position, speed) in query.iter_mut(world) {
             let right = input.pressing(InputButton::Right);
-            let left  = input.pressing(InputButton::Left);
+            let left = input.pressing(InputButton::Left);
             if right && !left {
                 speed.xsp += constants.acc;
             } else if left && !right {
@@ -156,7 +156,7 @@ impl Player {
 
     pub fn animation_update(world: &mut World, /*temporary*/ input: &Input) -> GameResult {
         use crate::input::InputButton;
-        use crate::objects::animation::{Animator, AnimationDirection};
+        use crate::objects::animation::{AnimationDirection, Animator};
         let mut query = <(&PlayerSpeed, &mut Animator)>::query();
         for (speed, animator) in query.iter_mut(world) {
             let (up, down, left, right) = (
@@ -170,23 +170,21 @@ impl Player {
             // The assignment on physics_update kinda allows me to do that.
             // Is this a good idea, then? No, it's stupid. But it'll suffice for now
             let xsp = speed.xsp.abs();
-            animator.set(String::from(
-                if xsp == 0.0 {
-                    if up && !down {
-                        "lookup"         
-                    } else if !up && down {
-                        "crouch"
-                    } else {
-                        "idle"
-                    }
-                } else if xsp >= 9.95 {
-                    "peel"
-                } else if xsp >= 5.9 {
-                    "run"
+            animator.set(String::from(if xsp == 0.0 {
+                if up && !down {
+                    "lookup"
+                } else if !up && down {
+                    "crouch"
                 } else {
-                    "walk"
+                    "idle"
                 }
-            ));
+            } else if xsp >= 9.95 {
+                "peel"
+            } else if xsp >= 5.9 {
+                "run"
+            } else {
+                "walk"
+            }));
 
             if left && !right {
                 animator.direction = AnimationDirection::Left;
