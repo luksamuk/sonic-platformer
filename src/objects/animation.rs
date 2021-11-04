@@ -125,18 +125,22 @@ impl Animator {
         self.frame_duration = duration;
     }
 
+    pub fn set_duration_ms(&mut self, duration: u64) {
+        self.frame_duration = Duration::from_millis(duration);
+    }
+
     // TODO: Animation data should be refactored! Using tuples is too intricate now.
-    // TODO: Animation speed should be mutable, so we should fetch animation speed on
-    //       first frame maybe?
     pub fn update(&mut self, animdata: &AnimatorData) {
         if let Some(data) = animdata.data.get(&self.animation_name) {
             let now = Instant::now();
             let delta = (now - self.last_update) as Duration;
             if delta > self.frame_duration {
-                    let frame_duration_ms = self.frame_duration.as_millis();
-                    if frame_duration_ms > 0 {
-                    let elapsed_frames = (delta.as_millis() / frame_duration_ms) as usize;
+                let frame_duration_mi = self.frame_duration.as_micros();
+                let delta_mi = delta.as_micros();
+                if frame_duration_mi > 0 {
+                    let elapsed_frames = (delta_mi / frame_duration_mi) as usize;
                     self.last_update = now;
+
                     // Increment frame count and handle loop
                     self.frame_count = if data.1 {
                         // If loops
