@@ -82,7 +82,7 @@ pub struct PlayerSpeed {
 }
 
 /// Represents the state variables for a player.
-/// 
+///
 /// These variables refer mostly to state such as ground state and
 /// other information that does not involve transformations directly.
 #[derive(Default, Clone, Copy, Debug, PartialEq)]
@@ -159,7 +159,12 @@ impl Player {
     pub fn physics_update(world: &mut World, input: &Input) -> GameResult {
         use crate::input::InputButton;
         use crate::objects::general::*;
-        let mut query = <(&mut PlayerState, &PlayerConstants, &mut Position, &mut PlayerSpeed)>::query();
+        let mut query = <(
+            &mut PlayerState,
+            &PlayerConstants,
+            &mut Position,
+            &mut PlayerSpeed,
+        )>::query();
         for (state, constants, position, speed) in query.iter_mut(world) {
             let right = input.pressing(InputButton::Right);
             let left = input.pressing(InputButton::Left);
@@ -168,23 +173,21 @@ impl Player {
             if state.ground {
                 // Ground movement
                 if !left && right {
-                    speed.gsp +=
-                        if speed.gsp < 0.0 {
-                            // Decelerate if moving left
-                            constants.dec
-                        } else {
-                            // Accelerate otherwise
-                            constants.acc
-                        };
+                    speed.gsp += if speed.gsp < 0.0 {
+                        // Decelerate if moving left
+                        constants.dec
+                    } else {
+                        // Accelerate otherwise
+                        constants.acc
+                    };
                 } else if left && !right {
-                    speed.gsp -=
-                        if speed.gsp > 0.0 {
-                            // Decelerate if moving right
-                            constants.dec
-                        } else {
-                            // Accelerate otherwise
-                            constants.acc
-                        }
+                    speed.gsp -= if speed.gsp > 0.0 {
+                        // Decelerate if moving right
+                        constants.dec
+                    } else {
+                        // Accelerate otherwise
+                        constants.acc
+                    }
                 } else {
                     // If not pressing any directionals, friction kicks in
                     speed.gsp -= speed.gsp.abs().min(constants.frc) * speed.gsp.signum();
@@ -195,15 +198,16 @@ impl Player {
 
                 // Apply slope factor
                 if speed.gsp.abs() >= constants.min_slp {
-                    speed.gsp -= angle_sin * if state.rolling {
-                        if speed.gsp.signum() as i32 == angle_sin.signum() as i32  {
-                            constants.slprollup
+                    speed.gsp -= angle_sin
+                        * if state.rolling {
+                            if speed.gsp.signum() as i32 == angle_sin.signum() as i32 {
+                                constants.slprollup
+                            } else {
+                                constants.slprolldown
+                            }
                         } else {
-                            constants.slprolldown
-                        }
-                    } else {
-                        constants.slp
-                    };
+                            constants.slp
+                        };
                 }
 
                 // Apply top speed
@@ -216,12 +220,11 @@ impl Player {
                 speed.ysp = speed.gsp * -angle_sin;
             } else {
                 // Air movement
-                speed.xsp +=
-                    if (right && !left) || (!right && left) {
-                        constants.air
-                    } else {
-                        0.0
-                    };
+                speed.xsp += if (right && !left) || (!right && left) {
+                    constants.air
+                } else {
+                    0.0
+                };
             }
 
             // Vertical movement
@@ -262,9 +265,9 @@ impl Player {
     }
 
     pub fn animation_update(world: &mut World, /*temporary*/ input: &Input) -> GameResult {
-        use std::time::Duration;
         use crate::input::InputButton;
         use crate::objects::animation::{AnimationDirection, Animator, AnimatorData};
+        use std::time::Duration;
         let mut query = <(&PlayerState, &PlayerSpeed, &mut Animator, &AnimatorData)>::query();
         for (state, speed, animator, animdata) in query.iter_mut(world) {
             let (up, down, left, right) = (
@@ -274,28 +277,38 @@ impl Player {
                 input.pressing(InputButton::Right),
             );
 
-            // The assignment on physics_update kinda allows me to do that.
-            // Is this a good idea, then? No, it's stupid. But it'll suffice for now
             let gsp = speed.gsp.abs();
-            animator.set(String::from(if gsp == 0.0 {
-                if up && !down {
-                    "lookup"
-                } else if !up && down {
-                    "crouch"
-                } else {
-                    "idle"
-                }
-            } else if gsp >= 9.95 {
-                "peel"
-            } else if gsp >= 5.0 {
-                "run"
-            } else {
-                "walk"
-            }), animdata);
+            if state.ground {
+                // The assignment on physics_update kinda allows me to do that.
+                // Is this a good idea, then? No, it's stupid. But it'll suffice for now
+                animator.set(
+                    String::from(if gsp == 0.0 {
+                        if up && !down {
+                            "lookup"
+                        } else if !up && down {
+                            "crouch"
+                        } else {
+                            "idle"
+                        }
+                    } else if gsp >= 9.95 {
+                        "peel"
+                    } else if gsp >= 5.0 {
+                        "run"
+                    } else {
+                        "walk"
+                    }),
+                    animdata,
+                );
 
-            // Animation duration
-            if state.ground && (gsp > 0.0) && (gsp < 9.95) {
-                animator.set_duration(Duration::from_millis((16.0 * (9.0 - gsp).max(0.0).floor()) as u64));
+                // Animation duration
+                if (gsp > 0.0) && (gsp < 9.95) {
+                    animator.set_duration_ms((16.0 * (9.0 - gsp).max(1.0).floor()) as u64);
+                }
+            } else {
+                if state.jumping || state.rolling {
+                    animator.set("roll".to_string(), animdata);
+                    animator.set_duration_ms((16.0 * (4.0 - gsp).max(1.0).floor()) as u64);
+                }
             }
 
             if left && !right {
