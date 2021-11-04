@@ -262,6 +262,7 @@ impl Player {
     }
 
     pub fn animation_update(world: &mut World, /*temporary*/ input: &Input) -> GameResult {
+        use std::time::Duration;
         use crate::input::InputButton;
         use crate::objects::animation::{AnimationDirection, Animator, AnimatorData};
         let mut query = <(&PlayerState, &PlayerSpeed, &mut Animator, &AnimatorData)>::query();
@@ -286,11 +287,16 @@ impl Player {
                 }
             } else if gsp >= 9.95 {
                 "peel"
-            } else if gsp >= 5.9 {
+            } else if gsp >= 5.0 {
                 "run"
             } else {
                 "walk"
             }), animdata);
+
+            // Animation duration
+            if state.ground && (gsp > 0.0) && (gsp < 9.95) {
+                animator.set_duration(Duration::from_millis((16.0 * (9.0 - gsp).max(0.0).floor()) as u64));
+            }
 
             if left && !right {
                 animator.direction = AnimationDirection::Left;

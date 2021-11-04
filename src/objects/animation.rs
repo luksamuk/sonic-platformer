@@ -133,23 +133,26 @@ impl Animator {
             let now = Instant::now();
             let delta = (now - self.last_update) as Duration;
             if delta > self.frame_duration {
-                let elapsed_frames = (delta.as_millis() / self.frame_duration.as_millis()) as usize;
-                self.last_update = now;
-                // Increment frame count and handle loop
-                self.frame_count = if data.1 {
-                    // If loops
-                    let new_frame = self.frame_count + elapsed_frames;
-                    if new_frame > data.0.len() - 1 {
-                        let extra_frames = new_frame - (data.0.len() - 1);
-                        data.2 + extra_frames - 1 // Loopback frame
+                    let frame_duration_ms = self.frame_duration.as_millis();
+                    if frame_duration_ms > 0 {
+                    let elapsed_frames = (delta.as_millis() / frame_duration_ms) as usize;
+                    self.last_update = now;
+                    // Increment frame count and handle loop
+                    self.frame_count = if data.1 {
+                        // If loops
+                        let new_frame = self.frame_count + elapsed_frames;
+                        if new_frame > data.0.len() - 1 {
+                            let extra_frames = new_frame - (data.0.len() - 1);
+                            data.2 + extra_frames - 1 // Loopback frame
+                        } else {
+                            new_frame
+                        }
+                    } else if self.frame_count > (data.0.len() - 1) {
+                        data.0.len() - 1
                     } else {
-                        new_frame
-                    }
-                } else if self.frame_count > (data.0.len() - 1) {
-                    data.0.len() - 1
-                } else {
-                    self.frame_count + elapsed_frames
-                };
+                        self.frame_count + elapsed_frames
+                    };
+                }
             }
             // Fetch animation frame number
             self.current_frame = *data.0.get(self.frame_count).unwrap_or(&0);
