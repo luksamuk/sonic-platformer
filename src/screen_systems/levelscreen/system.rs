@@ -8,12 +8,17 @@ use legion::*;
 
 pub struct LevelScreenSystem {
     world: World,
+    first_update: bool,
 }
 
 impl LevelScreenSystem {
     pub fn new() -> Self {
         let world = World::default();
-        Self { world }
+        let first_update = true;
+        Self {
+            world,
+            first_update,
+        }
     }
 
     pub fn setup(&mut self, context: &mut Context) -> GameResult {
@@ -22,6 +27,10 @@ impl LevelScreenSystem {
     }
 
     pub fn update(&mut self, navigation: &mut Navigation, input: &Input) -> GameResult {
+        if self.first_update {
+            self.first_update = false;
+            Player::respawn_all(&mut self.world);
+        }
         // Update players
         Player::animation_update(&mut self.world, input)?;
         Player::physics_update(&mut self.world, input)?;
@@ -33,6 +42,7 @@ impl LevelScreenSystem {
         }
 
         if input.pressed(InputButton::Back) {
+            self.first_update = true;
             *navigation = Navigation::TitleScreen;
         }
 
