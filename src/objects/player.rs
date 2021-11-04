@@ -95,6 +95,67 @@ pub struct PlayerState {
     pub rolling: bool,
 }
 
+impl PlayerState {
+    pub fn get_ground(&self) -> bool {
+        self.ground
+    }
+
+    /// Define the ground state. This will also update the player speed.
+    /// Remember to set the player speed's angle to the ground angle
+    /// BEFORE calling this function.
+    pub fn set_ground(&mut self, mut state: bool, speed: &mut PlayerSpeed, downward: bool) {
+        if self.ground {
+            self.ground = state;
+        } else {
+            if state {
+                if downward {
+                    // Shallow angle
+                    if ((speed.angle >= 0.0) && (speed.angle <= 23.0))
+                        || ((speed.angle >= 339.0) && (speed.angle <= 360.0))
+                    {
+                        speed.gsp = speed.xsp
+                    }
+                    // Half steep
+                    else if ((speed.angle > 23.0) && (speed.angle <= 45.0))
+                        || ((speed.angle >= 315.0) && (speed.angle < 339.0))
+                    {
+                        speed.gsp = if speed.xsp.abs() > speed.ysp.abs() {
+                            speed.xsp
+                        } else {
+                            speed.ysp * 0.5 * -speed.angle.sin().signum()
+                        };
+                    }
+                    // Full steep
+                    else if ((speed.angle > 45.0) && (speed.angle <= 90.0))
+                        || ((speed.angle >= 270.0) && (speed.angle < 315.0))
+                    {
+                        speed.gsp = if speed.xsp.abs() > speed.ysp.abs() {
+                            speed.xsp
+                        } else {
+                            speed.ysp * -speed.angle.sin().signum()
+                        };
+                    }
+                } else {
+                    // Going upward
+                    // Slope
+                    if ((speed.angle > 90.0) && (speed.angle <= 135.0))
+                        || ((speed.angle > 225.0) && (speed.angle <= 270.0))
+                    {
+                        // TODO: Attach to ceiling.
+                        speed.gsp = speed.ysp * -speed.angle.sin().signum();
+                    }
+                    // Ceiling
+                    else if (speed.angle > 135.0) && (speed.angle <= 225.0) {
+                        speed.ysp = 0.0;
+                        state = false;
+                    }
+                }
+            }
+            self.ground = state;
+        }
+    }
+}
+
 /// Unit struct representing the player.
 ///
 /// Exists only to hold a few utility functions related to player
@@ -156,6 +217,20 @@ impl Player {
         Ok(world.push((state, constants, position, speed, animation_data, animator)))
     }
 
+    pub fn respawn_all(world: &mut World) {
+        use crate::objects::general::Position;
+        let mut query = <(&mut PlayerState, &mut Position, &mut PlayerSpeed)>::query();
+        for (state, position, speed) in query.iter_mut(world) {
+            *position = Position::new(30.0, 240.0);
+            *speed = PlayerSpeed::default();
+            //state = PlayerState::default();
+            *state = PlayerState {
+                ground: true,
+                ..PlayerState::default()
+            };
+        }
+    }
+
     pub fn physics_update(world: &mut World, input: &Input) -> GameResult {
         use crate::input::InputButton;
         use crate::objects::general::*;
@@ -168,6 +243,13 @@ impl Player {
         for (state, constants, position, speed) in query.iter_mut(world) {
             let right = input.pressing(InputButton::Right);
             let left = input.pressing(InputButton::Left);
+
+            // Fake ground. Remove later!
+            if !state.ground && (position.0.y >= 240.0) {
+                position.0.y = 240.0;
+                speed.angle = 0.0;
+                state.set_ground(true, speed, true);
+            }
 
             // Horizontal movement
             if state.ground {
@@ -220,8 +302,9 @@ impl Player {
                 speed.ysp = speed.gsp * -angle_sin;
             } else {
                 // Air movement
+                let dir = if (right && !left) { 1.0 } else { -1.0 };
                 speed.xsp += if (right && !left) || (!right && left) {
-                    constants.air
+                    constants.air * dir
                 } else {
                     0.0
                 };
@@ -248,9 +331,8 @@ impl Player {
                 }
             } else {
                 // Perform jump.
-                // TODO: LANDING!
                 if input.pressed(InputButton::A) {
-                    state.ground = false;
+                    state.set_ground(false, speed, true);
                     state.jumping = true;
                     speed.xsp -= constants.jmp * speed.angle.sin();
                     speed.ysp -= constants.jmp * speed.angle.cos();
@@ -267,7 +349,6 @@ impl Player {
     pub fn animation_update(world: &mut World, /*temporary*/ input: &Input) -> GameResult {
         use crate::input::InputButton;
         use crate::objects::animation::{AnimationDirection, Animator, AnimatorData};
-        use std::time::Duration;
         let mut query = <(&PlayerState, &PlayerSpeed, &mut Animator, &AnimatorData)>::query();
         for (state, speed, animator, animdata) in query.iter_mut(world) {
             let (up, down, left, right) = (
