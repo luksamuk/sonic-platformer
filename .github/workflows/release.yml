@@ -75,7 +75,7 @@ jobs:
         run: cargo build --release
       
       - name: Compactação de artefatos
-        run: cp ./target/release/sonic-platformer ./ && tar zcvf sonic-platformer.tar.gz sonic-platformer && rm sonic-platformer
+        run: cp ./target/release/sonic-platformer ./ && tar zcvf sonic-platformer.tar.gz sonic-platformer resources/ && rm sonic-platformer
       
       - name: Upload de artefatos
         uses: actions/upload-artifact@v2
@@ -110,9 +110,9 @@ jobs:
         run: cargo rustc --release --bin sonic-platformer -- -Clink-args="/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup"
       
       - name: Compactação de artefatos
-        uses: papeloto/action-zip@v1
+        uses: vimtor/action-zip@v1
         with:
-          files: ./target/release/sonic-platformer.exe
+          files: ./target/release/sonic-platformer.exe resources/
           dest: sonic-platformer.zip
       
       - name: Upload de artefatos
