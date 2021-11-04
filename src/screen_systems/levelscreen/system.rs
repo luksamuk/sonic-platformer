@@ -2,6 +2,7 @@ use crate::input::Input;
 use crate::objects::animation::*;
 use crate::objects::general::*;
 use crate::objects::player::*;
+use crate::screen_systems::Navigation;
 use ggez::{Context, GameResult};
 use legion::*;
 
@@ -20,7 +21,7 @@ impl LevelScreenSystem {
         Ok(())
     }
 
-    pub fn update(&mut self, input: &Input) -> GameResult {
+    pub fn update(&mut self, _navigation: &mut Navigation, input: &Input) -> GameResult {
         // Update players
         Player::animation_update(&mut self.world, input)?;
         Player::physics_update(&mut self.world, input)?;

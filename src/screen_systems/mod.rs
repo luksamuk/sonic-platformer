@@ -1,13 +1,13 @@
 mod levelscreen;
-mod titlescreen;
 mod navigation;
+mod titlescreen;
 
-pub use navigation::Navigation;
 use crate::Input;
 use ggez::graphics::{self, DrawParam, FilterMode};
 use ggez::Context;
 use ggez::GameResult;
 pub use levelscreen::system::LevelScreenSystem;
+pub use navigation::Navigation;
 pub use titlescreen::system::TitleScreenSystem;
 
 pub struct ScreenSystems {
@@ -28,12 +28,12 @@ impl ScreenSystems {
     pub fn update(
         &mut self,
         _context: &mut Context,
-        navigation: &Navigation,
+        navigation: &mut Navigation,
         input: &Input,
     ) -> GameResult {
         match navigation {
-            Navigation::TitleScreen => self.title_screen.update(input)?,
-            Navigation::LevelScreen => self.level_screen.update(input)?,
+            Navigation::TitleScreen => self.title_screen.update(navigation, input)?,
+            Navigation::LevelScreen => self.level_screen.update(navigation, input)?,
             Navigation::Settings => {}
         };
         Ok(())
