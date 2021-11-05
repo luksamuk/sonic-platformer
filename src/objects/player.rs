@@ -498,7 +498,7 @@ impl Player {
                 }
 
                 // Apply friction
-                if !left && !right {
+                if (!left && !right) || (left && right) {
                     speed.gsp -= speed.gsp.abs().min(constants.frc) * speed.gsp.signum();
                 }
 
