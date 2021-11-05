@@ -529,7 +529,13 @@ impl Player {
                 speed.ysp = speed.gsp * -angle_sin;
             } else {
                 // Air movement
-                let dir = if right && !left { 1.0 } else { -1.0 };
+                let dir = if right && !left {
+                    1.0
+                } else if !right && left {
+                    -1.0
+                } else {
+                    0.0
+                };
                 speed.xsp += if (right && !left) || (!right && left) {
                     constants.air * dir
                 } else {
