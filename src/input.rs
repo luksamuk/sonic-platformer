@@ -3,6 +3,7 @@
 use ggez::input::keyboard::KeyCode;
 
 pub enum InputButton {
+    Debug,
     Up,
     Down,
     Left,
@@ -14,6 +15,7 @@ pub enum InputButton {
 
 #[derive(Default, Clone)]
 pub struct InputState {
+    pub debug: bool,
     pub up: bool,
     pub down: bool,
     pub left: bool,
@@ -36,6 +38,7 @@ impl Input {
 
     pub fn set_keyboard(&mut self, keycode: KeyCode, state: bool) {
         match keycode {
+            KeyCode::F1 => self.current.debug = state,
             KeyCode::Up => self.current.up = state,
             KeyCode::Down => self.current.down = state,
             KeyCode::Left => self.current.left = state,
@@ -49,6 +52,7 @@ impl Input {
 
     pub fn pressing(&self, btn: InputButton) -> bool {
         match btn {
+            InputButton::Debug => self.current.debug,
             InputButton::Up => self.current.up,
             InputButton::Down => self.current.down,
             InputButton::Left => self.current.left,
@@ -61,6 +65,7 @@ impl Input {
 
     pub fn pressed(&self, btn: InputButton) -> bool {
         match btn {
+            InputButton::Debug => self.current.debug && !self.previous.debug,
             InputButton::Up => self.current.up && !self.previous.up,
             InputButton::Down => self.current.down && !self.previous.down,
             InputButton::Left => self.current.left && !self.previous.left,

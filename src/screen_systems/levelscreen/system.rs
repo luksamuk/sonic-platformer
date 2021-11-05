@@ -9,15 +9,18 @@ use legion::*;
 pub struct LevelScreenSystem {
     world: World,
     first_update: bool,
+    debug: bool,
 }
 
 impl LevelScreenSystem {
     pub fn new() -> Self {
         let world = World::default();
         let first_update = true;
+        let debug = false;
         Self {
             world,
             first_update,
+            debug,
         }
     }
 
@@ -46,6 +49,10 @@ impl LevelScreenSystem {
             *navigation = Navigation::TitleScreen;
         }
 
+        if input.pressed(InputButton::Debug) {
+            self.debug = !self.debug;
+        }
+
         Ok(())
     }
 
@@ -55,6 +62,15 @@ impl LevelScreenSystem {
         for (data, animator, hotspot) in query.iter(&self.world) {
             animator.draw(context, data, hotspot)?;
         }
+
+        // Draw sensors
+        if self.debug {
+            let mut query = <(&PlayerState, &Position, &PlayerSpeed)>::query();
+            for (state, position, speed) in query.iter(&self.world) {
+                PlayerSensors::draw(context, state, position, speed)?;
+            }
+        }
+
         Ok(())
     }
 }
