@@ -409,7 +409,6 @@ impl Player {
     }
 
     pub fn respawn_all(world: &mut World) {
-        use crate::objects::general::Position;
         let mut query = <(&mut PlayerState, &mut Position, &mut PlayerSpeed)>::query();
         for (state, position, speed) in query.iter_mut(world) {
             *position = Position::new(30.0, 240.0);
@@ -466,7 +465,7 @@ impl Player {
                 if (state.action == PlayerAction::Default)
                     || (state.action == PlayerAction::Skidding)
                 {
-                    if (!left && right) {
+                    if !left && right {
                         state.direction = Direction::Right;
                         speed.gsp += if speed.gsp < 0.0 {
                             // Decelerate if moving left
@@ -480,7 +479,7 @@ impl Player {
                         if (state.action == PlayerAction::Skidding) && (speed.gsp >= 0.0) {
                             state.action = PlayerAction::Default;
                         }
-                    } else if (left && !right) {
+                    } else if left && !right {
                         state.direction = Direction::Left;
                         speed.gsp -= if speed.gsp > 0.0 {
                             // Decelerate if moving right
@@ -534,7 +533,7 @@ impl Player {
                 speed.ysp = speed.gsp * -angle_sin;
             } else {
                 // Air movement
-                let dir = if (right && !left) { 1.0 } else { -1.0 };
+                let dir = if right && !left { 1.0 } else { -1.0 };
                 speed.xsp += if (right && !left) || (!right && left) {
                     constants.air * dir
                 } else {
@@ -542,9 +541,9 @@ impl Player {
                 };
 
                 // Air direction
-                if (!left && right) {
+                if !left && right {
                     state.direction = Direction::Right;
-                } else if (left && !right) {
+                } else if left && !right {
                     state.direction = Direction::Left;
                 }
             }
