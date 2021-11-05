@@ -1,8 +1,8 @@
 use crate::input::Input;
+use crate::objects::general::*;
 use ggez::{Context, GameResult};
 use glam::*;
 use legion::{Entity, IntoQuery, World};
-use crate::objects::general::*;
 
 /// Represents the player's speed constants.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -82,6 +82,27 @@ pub struct PlayerSpeed {
     pub angle: f32,
 }
 
+/// Enumeration for describing the current player action.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum PlayerAction {
+    /// Player is idling, walking or running.
+    Default,
+    /// Player is jumping.
+    Jumping,
+    /// Player is rolling on the ground.
+    Rolling,
+    /// Player is ducking while standing still.
+    Crouching,
+    /// Player is looking up while standing still.
+    LookingUp,
+}
+
+impl Default for PlayerAction {
+    fn default() -> Self {
+        PlayerAction::Default
+    }
+}
+
 /// Represents the state variables for a player.
 ///
 /// These variables refer mostly to state such as ground state and
@@ -90,10 +111,8 @@ pub struct PlayerSpeed {
 pub struct PlayerState {
     /// Whether the player is on ground
     pub ground: bool,
-    /// Whether the player has jumped
-    pub jumping: bool,
-    /// Whether the player is rolling
-    pub rolling: bool,
+    /// Default action for player
+    pub action: PlayerAction,
 }
 
 impl PlayerState {
@@ -154,15 +173,15 @@ impl PlayerState {
             }
             self.ground = state;
 
-            if self.ground {
-                self.jumping = false;
+            if self.ground && self.action == PlayerAction::Jumping {
+                self.action = PlayerAction::Default;
             }
         }
     }
 }
 
 /// Unit struct representing the Player's sensors.
-/// 
+///
 /// This is not supposed to be used as a component. Instead, it only
 /// relates to logic and drawing of player sensors.
 pub struct PlayerSensors;
@@ -170,33 +189,46 @@ pub struct PlayerSensors;
 impl PlayerSensors {
     /// Draws a representation for player sensors. Requires player data
     /// such as its state, position and rotation.
-    pub fn draw(context: &mut Context, state: &PlayerState, position: &Position, speed: &PlayerSpeed) -> GameResult {
+    pub fn draw(
+        context: &mut Context,
+        state: &PlayerState,
+        position: &Position,
+        speed: &PlayerSpeed,
+    ) -> GameResult {
         use ggez::graphics::{self, Color, DrawMode, MeshBuilder};
-        let crouched = state.rolling || state.jumping;
+        let smaller = (state.action == PlayerAction::Rolling)
+            || (state.action == PlayerAction::Jumping)
+            || (state.action == PlayerAction::Crouching);
 
         let mut crouch_offset = 0.0;
-        if crouched {
+        if smaller {
             crouch_offset = 5.0;
         }
 
-        let hotspot = if crouched {
-                glam::vec2(position.0.x, position.0.y + 5.0)
-            } else {
-                position.0
-            };
-        
+        let hotspot = if smaller {
+            glam::vec2(position.0.x, position.0.y + 5.0)
+        } else {
+            position.0
+        };
+
         let alpha = 1.0;
-        
-        let mesh = MeshBuilder::new()
+
+        let sensors = MeshBuilder::new()
             // Left ground sensor (A)
             .line(
-                &[glam::vec2(-8.0, 0.0), glam::vec2(-8.0, 18.0 - crouch_offset)],
+                &[
+                    glam::vec2(-8.0, 0.0),
+                    glam::vec2(-8.0, 18.0 - crouch_offset),
+                ],
                 1.0,
                 Color::new(0.0, 0.94, 0.0, alpha),
             )?
             // Left ceiling sensor (C)
             .line(
-                &[glam::vec2(-8.0, 0.0), glam::vec2(-8.0, -20.0 + crouch_offset)],
+                &[
+                    glam::vec2(-8.0, 0.0),
+                    glam::vec2(-8.0, -20.0 + crouch_offset),
+                ],
                 1.0,
                 Color::new(0.0, 0.68, 0.93, alpha),
             )?
@@ -226,20 +258,87 @@ impl PlayerSensors {
             )?
             // Points
             // Central
-            .circle(DrawMode::fill(), glam::vec2(0.0, 0.0), 3.0, 0.1, Color::new(0.54, 0.54, 0.54, 1.0))?
-            .circle(DrawMode::fill(), glam::vec2(0.0, 0.0), 1.0, 0.1, Color::BLACK)?
+            .circle(
+                DrawMode::fill(),
+                glam::vec2(0.0, 0.0),
+                3.0,
+                0.1,
+                Color::new(0.54, 0.54, 0.54, 1.0),
+            )?
+            .circle(
+                DrawMode::fill(),
+                glam::vec2(0.0, 0.0),
+                1.0,
+                0.1,
+                Color::BLACK,
+            )?
             // Wall sensors
-            .line(&[glam::vec2(-11.0, 0.0), glam::vec2(-10.0, 0.0)], 1.0, Color::WHITE)?
-            .line(&[glam::vec2(10.0, 0.0), glam::vec2(11.0, 0.0)], 1.0, Color::WHITE)?
+            .line(
+                &[glam::vec2(-11.0, 0.0), glam::vec2(-10.0, 0.0)],
+                1.0,
+                Color::WHITE,
+            )?
+            .line(
+                &[glam::vec2(10.0, 0.0), glam::vec2(11.0, 0.0)],
+                1.0,
+                Color::WHITE,
+            )?
             // Ceiling sensors
-            .line(&[glam::vec2(-8.0, -19.0 + crouch_offset), glam::vec2(-8.0, -20.0 + crouch_offset)], 1.0, Color::WHITE)?
-            .line(&[glam::vec2(8.0, -19.0 + crouch_offset), glam::vec2(8.0, -20.0 + crouch_offset)], 1.0, Color::WHITE)?
+            .line(
+                &[
+                    glam::vec2(-8.0, -19.0 + crouch_offset),
+                    glam::vec2(-8.0, -20.0 + crouch_offset),
+                ],
+                1.0,
+                Color::WHITE,
+            )?
+            .line(
+                &[
+                    glam::vec2(8.0, -19.0 + crouch_offset),
+                    glam::vec2(8.0, -20.0 + crouch_offset),
+                ],
+                1.0,
+                Color::WHITE,
+            )?
             // Bottom sensors
-            .line(&[glam::vec2(-8.0, 18.0 - crouch_offset), glam::vec2(-8.0, 17.0 - crouch_offset)], 1.0, Color::WHITE)?
-            .line(&[glam::vec2(8.0, 18.0 - crouch_offset), glam::vec2(8.0, 17.0 - crouch_offset)], 1.0, Color::WHITE)?
+            .line(
+                &[
+                    glam::vec2(-8.0, 18.0 - crouch_offset),
+                    glam::vec2(-8.0, 17.0 - crouch_offset),
+                ],
+                1.0,
+                Color::WHITE,
+            )?
+            .line(
+                &[
+                    glam::vec2(8.0, 18.0 - crouch_offset),
+                    glam::vec2(8.0, 17.0 - crouch_offset),
+                ],
+                1.0,
+                Color::WHITE,
+            )?
             // Build mesh
             .build(context)?;
-        graphics::draw(context, &mesh, (hotspot, speed.angle, Color::WHITE))?;
+
+        let hitbox_rect =
+            if (state.action == PlayerAction::Rolling) || (state.action == PlayerAction::Jumping) {
+                graphics::Rect::new(-8.0, -10.0, 17.0, 21.0)
+            }
+            //else if state.action == PlayerAction::Crouching {}
+            else {
+                graphics::Rect::new(-8.0, -16.0, 17.0, 33.0)
+            };
+
+        let hitbox = MeshBuilder::new()
+            .rectangle(
+                DrawMode::fill(),
+                hitbox_rect,
+                Color::new(1.0, 0.0, 1.0, 0.5),
+            )?
+            .build(context)?;
+
+        graphics::draw(context, &hitbox, (hotspot, 0.0, Color::WHITE))?;
+        graphics::draw(context, &sensors, (hotspot, speed.angle, Color::WHITE))?;
         Ok(())
     }
 }
@@ -369,7 +468,7 @@ impl Player {
                 // Apply slope factor
                 if speed.gsp.abs() >= constants.min_slp {
                     speed.gsp -= angle_sin
-                        * if state.rolling {
+                        * if state.action == PlayerAction::Rolling {
                             if speed.gsp.signum() as i32 == angle_sin.signum() as i32 {
                                 constants.slprollup
                             } else {
@@ -421,7 +520,7 @@ impl Player {
                 // Perform jump.
                 if input.pressed(InputButton::A) {
                     state.set_ground(false, speed, true);
-                    state.jumping = true;
+                    state.action = PlayerAction::Jumping;
                     speed.xsp -= constants.jmp * speed.angle.sin();
                     speed.ysp -= constants.jmp * speed.angle.cos();
                 }
@@ -474,7 +573,9 @@ impl Player {
                     animator.set_duration_ms((16.0 * (9.0 - gsp).max(1.0).floor()) as u64);
                 }
             } else {
-                if state.jumping || state.rolling {
+                if (state.action == PlayerAction::Jumping)
+                    || (state.action == PlayerAction::Rolling)
+                {
                     animator.set("roll".to_string(), animdata);
                     animator.set_duration_ms((16.0 * (4.0 - gsp).max(1.0).floor()) as u64);
                 }
