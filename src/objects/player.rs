@@ -95,6 +95,8 @@ pub enum PlayerAction {
     Crouching,
     /// Player is looking up while standing still.
     LookingUp,
+    /// Player is skidding
+    Skidding,
 }
 
 impl Default for PlayerAction {
@@ -111,8 +113,10 @@ impl Default for PlayerAction {
 pub struct PlayerState {
     /// Whether the player is on ground
     pub ground: bool,
-    /// Default action for player
+    /// Action for player
     pub action: PlayerAction,
+    /// Direction for the player
+    pub direction: Direction,
 }
 
 impl PlayerState {
@@ -323,9 +327,9 @@ impl PlayerSensors {
         let hitbox_rect =
             if (state.action == PlayerAction::Rolling) || (state.action == PlayerAction::Jumping) {
                 graphics::Rect::new(-8.0, -10.0, 17.0, 21.0)
-            }
-            //else if state.action == PlayerAction::Crouching {}
-            else {
+            } else if state.action == PlayerAction::Crouching {
+                graphics::Rect::new(-8.0, -4.0, 17.0, 17.0)
+            } else {
                 graphics::Rect::new(-8.0, -16.0, 17.0, 33.0)
             };
 
@@ -428,8 +432,12 @@ impl Player {
             &mut PlayerSpeed,
         )>::query();
         for (state, constants, position, speed) in query.iter_mut(world) {
-            let right = input.pressing(InputButton::Right);
-            let left = input.pressing(InputButton::Left);
+            let (up, down, left, right) = (
+                input.pressing(InputButton::Up),
+                input.pressing(InputButton::Down),
+                input.pressing(InputButton::Left),
+                input.pressing(InputButton::Right),
+            );
 
             // Fake ground. Remove later!
             if !state.ground && (position.0.y >= 240.0) {
@@ -441,25 +449,62 @@ impl Player {
             // Horizontal movement
             if state.ground {
                 // Ground movement
-                if !left && right {
-                    speed.gsp += if speed.gsp < 0.0 {
-                        // Decelerate if moving left
-                        constants.dec
-                    } else {
-                        // Accelerate otherwise
-                        constants.acc
-                    };
-                } else if left && !right {
-                    speed.gsp -= if speed.gsp > 0.0 {
-                        // Decelerate if moving right
-                        constants.dec
-                    } else {
-                        // Accelerate otherwise
-                        constants.acc
-                    }
+                // FIXME: Comparing floats for equality is dumb. But it works for now
+                let abs_gsp = speed.gsp.abs();
+                state.action = if (abs_gsp == 0.0) && (up && !down) {
+                    PlayerAction::LookingUp
+                } else if (abs_gsp == 0.0) && (!up && down) {
+                    PlayerAction::Crouching
+                } else if (state.action == PlayerAction::Crouching)
+                    || (state.action == PlayerAction::LookingUp)
+                {
+                    PlayerAction::Default
                 } else {
-                    // If not pressing any directionals, friction kicks in
+                    state.action
+                };
+
+                if (state.action == PlayerAction::Default)
+                    || (state.action == PlayerAction::Skidding)
+                {
+                    if (!left && right) {
+                        state.direction = Direction::Right;
+                        speed.gsp += if speed.gsp < 0.0 {
+                            // Decelerate if moving left
+                            state.action = PlayerAction::Skidding;
+                            constants.dec
+                        } else {
+                            // Accelerate otherwise
+                            constants.acc
+                        };
+
+                        if (state.action == PlayerAction::Skidding) && (speed.gsp >= 0.0) {
+                            state.action = PlayerAction::Default;
+                        }
+                    } else if (left && !right) {
+                        state.direction = Direction::Left;
+                        speed.gsp -= if speed.gsp > 0.0 {
+                            // Decelerate if moving right
+                            state.action = PlayerAction::Skidding;
+                            constants.dec
+                        } else {
+                            // Accelerate otherwise
+                            constants.acc
+                        };
+
+                        if (state.action == PlayerAction::Skidding) && (speed.gsp <= 0.0) {
+                            state.action = PlayerAction::Default;
+                        }
+                    }
+                }
+
+                // Apply friction
+                if !left && !right {
                     speed.gsp -= speed.gsp.abs().min(constants.frc) * speed.gsp.signum();
+                }
+
+                // Stop skidding action if speed is zero
+                if (speed.gsp.abs() == 0.0) && state.action == PlayerAction::Skidding {
+                    state.action = PlayerAction::Default;
                 }
 
                 let angle_sin = speed.angle.sin();
@@ -495,10 +540,22 @@ impl Player {
                 } else {
                     0.0
                 };
+
+                // Air direction
+                if (!left && right) {
+                    state.direction = Direction::Right;
+                } else if (left && !right) {
+                    state.direction = Direction::Left;
+                }
             }
 
             // Vertical movement
             if !state.ground {
+                // Skidding on air makes no sense at all
+                if state.action == PlayerAction::Skidding {
+                    state.action = PlayerAction::Default;
+                }
+
                 // Apply air drag
                 if (speed.ysp < 0.0) && (speed.ysp > constants.minjmp) {
                     speed.xsp -= (speed.xsp % 0.125) / 256.0;
@@ -533,41 +590,32 @@ impl Player {
         Ok(())
     }
 
-    pub fn animation_update(world: &mut World, /*temporary*/ input: &Input) -> GameResult {
-        use crate::input::InputButton;
-        use crate::objects::animation::{AnimationDirection, Animator, AnimatorData};
+    pub fn animation_update(world: &mut World) -> GameResult {
+        use crate::objects::animation::{Animator, AnimatorData};
         let mut query = <(&PlayerState, &PlayerSpeed, &mut Animator, &AnimatorData)>::query();
         for (state, speed, animator, animdata) in query.iter_mut(world) {
-            let (up, down, left, right) = (
-                input.pressing(InputButton::Up),
-                input.pressing(InputButton::Down),
-                input.pressing(InputButton::Left),
-                input.pressing(InputButton::Right),
-            );
-
             let gsp = speed.gsp.abs();
             if state.ground {
-                // The assignment on physics_update kinda allows me to do that.
-                // Is this a good idea, then? No, it's stupid. But it'll suffice for now
                 animator.set(
-                    String::from(if gsp == 0.0 {
-                        if up && !down {
-                            "lookup"
-                        } else if !up && down {
-                            "crouch"
-                        } else {
-                            "idle"
+                    String::from(match state.action {
+                        PlayerAction::LookingUp => "lookup",
+                        PlayerAction::Crouching => "crouch",
+                        PlayerAction::Skidding => "skid",
+                        PlayerAction::Default => {
+                            if gsp >= 9.95 {
+                                "peel"
+                            } else if gsp >= 5.0 {
+                                "run"
+                            } else if gsp > 0.0 {
+                                "walk"
+                            } else {
+                                "idle"
+                            }
                         }
-                    } else if gsp >= 9.95 {
-                        "peel"
-                    } else if gsp >= 5.0 {
-                        "run"
-                    } else {
-                        "walk"
+                        _ => "walk", /* uhhhh wat */
                     }),
                     animdata,
                 );
-
                 // Animation duration
                 if (gsp > 0.0) && (gsp < 9.95) {
                     animator.set_duration_ms((16.0 * (9.0 - gsp).max(1.0).floor()) as u64);
@@ -581,11 +629,8 @@ impl Player {
                 }
             }
 
-            if left && !right {
-                animator.direction = AnimationDirection::Left;
-            } else if !left && right {
-                animator.direction = AnimationDirection::Right;
-            }
+            // Update direction
+            animator.direction = state.direction;
         }
         Ok(())
     }
