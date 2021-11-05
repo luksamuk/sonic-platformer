@@ -1,3 +1,5 @@
+#![allow(clippy::from_over_into)]
+
 use glam::Vec2;
 
 /// Refers to a tag component which can be attached to any entity.

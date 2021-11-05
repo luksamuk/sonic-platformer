@@ -170,7 +170,7 @@ impl Animator {
         animdata: &AnimatorData,
         hotspot: &Position,
     ) -> GameResult {
-        if let Some(_) = animdata.data.get(&self.animation_name) {
+        if animdata.data.get(&self.animation_name).is_some() {
             let frame = self.calculate_frame(animdata.get_image_size(), animdata.frame_size);
             let floatdir: f32 = self.direction.into();
             let xscale = floatdir * self.scale;
