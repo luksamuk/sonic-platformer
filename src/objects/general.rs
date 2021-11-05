@@ -20,3 +20,26 @@ impl Position {
         Self(Vec2::new(x, y))
     }
 }
+
+/// Represents a direction for anything. May be converted to
+/// a unitary float value for rendering purposes.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum Direction {
+    Left,
+    Right,
+}
+
+impl Into<f32> for Direction {
+    fn into(self) -> f32 {
+        match self {
+            Direction::Left => -1.0,
+            Direction::Right => 1.0,
+        }
+    }
+}
+
+impl Default for Direction {
+    fn default() -> Self {
+        Direction::Right
+    }
+}

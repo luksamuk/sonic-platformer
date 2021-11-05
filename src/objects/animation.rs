@@ -1,3 +1,4 @@
+use crate::objects::general::Direction;
 use crate::objects::general::Position;
 use ggez::graphics::{self, DrawParam, Image, Rect};
 use ggez::{Context, GameError, GameResult};
@@ -64,28 +65,13 @@ impl AnimatorData {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub enum AnimationDirection {
-    Left,
-    Right,
-}
-
-impl Into<f32> for AnimationDirection {
-    fn into(self) -> f32 {
-        match self {
-            AnimationDirection::Left => -1.0,
-            AnimationDirection::Right => 1.0,
-        }
-    }
-}
-
 #[derive(Clone, Debug, PartialEq)]
 pub struct Animator {
     animation_name: String,
     frame_count: usize,
     current_frame: u32,
     last_update: Instant,
-    pub direction: AnimationDirection,
+    pub direction: Direction,
     scale: f32,
     frame_duration: Duration,
 }
@@ -97,7 +83,7 @@ impl Default for Animator {
             frame_count: 0,
             current_frame: 0,
             last_update: Instant::now(),
-            direction: AnimationDirection::Right,
+            direction: Direction::Right,
             scale: 1.0,
             frame_duration: Duration::from_millis(16),
         }

@@ -35,7 +35,7 @@ impl LevelScreenSystem {
             Player::respawn_all(&mut self.world);
         }
         // Update players
-        Player::animation_update(&mut self.world, input)?;
+        Player::animation_update(&mut self.world)?;
         Player::physics_update(&mut self.world, input)?;
 
         // Update all animated sprites
