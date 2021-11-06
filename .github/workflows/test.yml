@@ -79,7 +79,9 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: linux_debug
-          path: ./target/debug/sonic-platformer
+          path: |
+            ./target/debug/sonic-platformer
+            resources/
 
   build-windows:
     runs-on: windows-latest
@@ -111,4 +113,6 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: windows_debug
-          path: ./target/debug/sonic-platformer.exe
+          path: |
+            ./target/debug/sonic-platformer.exe
+            resources/
