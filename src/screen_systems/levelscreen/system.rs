@@ -1,7 +1,7 @@
 use crate::input::{Input, InputButton};
 use crate::objects::animation::*;
 use crate::objects::general::*;
-use crate::objects::player::*;
+use crate::objects::player::{self, *};
 use crate::screen_systems::Navigation;
 use ggez::{Context, GameResult};
 use legion::*;
@@ -35,8 +35,8 @@ impl LevelScreenSystem {
             Player::respawn_all(&mut self.world);
         }
         // Update players
-        Player::animation_update(&mut self.world)?;
-        Player::physics_update(&mut self.world, input)?;
+        player::animation::update(&mut self.world)?;
+        player::physics::update(&mut self.world, input)?;
 
         // Update all animated sprites
         let mut query = <(&AnimatorData, &mut Animator)>::query();
