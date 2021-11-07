@@ -5,11 +5,11 @@ use ggez::GameResult;
 use glam::*;
 
 /// Represents data related to camera.
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Debug, PartialEq)]
 pub struct Camera {
     pub position: Position,
     border: Rect,
-    minimum: Vec2,
+    center: Vec2,
 }
 
 fn get_screen_center(context: &Context) -> Vec2 {
@@ -22,14 +22,18 @@ impl Camera {
          Self {
             position: Position::default(),
             border: Rect::new(-16.0, -32.0, 16.0, 64.0),
-            minimum: get_screen_center(context),
+            center: get_screen_center(context),
         }
+    }
+
+    pub fn transform(&self, vertex: Vec2) -> Vec2 {
+        (vertex.clone() - self.position.0) + self.center
     }
 
     pub fn update(&mut self, followed: Option<&Position>) -> GameResult {
         // TODO!
-        if let Some(position) = followed {
-            self.position.0 = position.0;    
+        if let Some(followpos) = followed {
+            self.position.0 = followpos.0;
         }
         Ok(())
     }
