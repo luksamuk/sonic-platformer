@@ -4,6 +4,8 @@ use crate::objects::general::Position;
 use ggez::GameResult;
 use legion::*;
 
+const FAKE_GROUND_Y: f32 = 800.0;
+
 pub fn update(world: &mut World, input: &Input) -> GameResult {
     use crate::input::InputButton;
     use crate::objects::general::*;
@@ -22,8 +24,8 @@ pub fn update(world: &mut World, input: &Input) -> GameResult {
         );
 
         // Fake ground. Remove later!
-        if !state.ground && (position.0.y >= 240.0) {
-            position.0.y = 240.0;
+        if !state.ground && (position.0.y >= FAKE_GROUND_Y) {
+            position.0.y = FAKE_GROUND_Y;
             speed.angle = 0.0;
             state.set_ground(true, speed, true);
         }
