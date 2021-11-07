@@ -49,11 +49,24 @@ impl LevelScreenSystem {
         }
 
         // Update camera
-        let mut query = <(&PlayerState, &Position)>::query();
-        for (_, position) in query.iter(&self.world) {
+        let mut query = <(&PlayerState, &Position, &PlayerSpeed)>::query();
+        for (state, position, speed) in query.iter(&self.world) {
             if self.camera.is_some() {
+                use crate::objects::camera::CameraVerticalBehaviour;
                 let camera = self.camera.as_mut().unwrap();
-                camera.update(Some(position))?;
+
+                let behaviour = if !state.get_ground() {
+                    CameraVerticalBehaviour::RespectBounds
+                } else {
+                    let ysp = speed.ysp.abs();
+                    if ysp <= 6.0 {
+                        CameraVerticalBehaviour::CenterYSlow
+                    } else {
+                        CameraVerticalBehaviour::CenterYFast
+                    }
+                };
+
+                camera.update(Some(position), behaviour)?;
             }
         }
 
@@ -78,7 +91,6 @@ impl LevelScreenSystem {
             } else {
                 position.0
             });
-            println!("Hotspot: {:?}", hotspot);
             animator.draw(context, data, &hotspot)?;
         }
 
@@ -86,7 +98,12 @@ impl LevelScreenSystem {
         if self.debug {
             let mut query = <(&PlayerState, &Position, &PlayerSpeed)>::query();
             for (state, position, speed) in query.iter(&self.world) {
-                PlayerSensors::draw(context, state, position, speed)?;
+                let hotspot = Position::wrap(if let Some(camera) = &self.camera {
+                    camera.transform(position.0)
+                } else {
+                    position.0
+                });
+                PlayerSensors::draw(context, state, &hotspot, speed)?;
             }
 
             if let Some(camera) = &self.camera {
