@@ -1,5 +1,6 @@
 use crate::input::{Input, InputButton};
 use crate::objects::animation::*;
+use crate::objects::camera::Camera;
 use crate::objects::general::*;
 use crate::objects::player::{self, *};
 use crate::screen_systems::Navigation;
@@ -10,6 +11,7 @@ pub struct LevelScreenSystem {
     world: World,
     first_update: bool,
     debug: bool,
+    camera: Option<Camera>,
 }
 
 impl LevelScreenSystem {
@@ -21,10 +23,12 @@ impl LevelScreenSystem {
             world,
             first_update,
             debug,
+            camera: None,
         }
     }
 
     pub fn setup(&mut self, context: &mut Context) -> GameResult {
+        self.camera = Some(Camera::new(context));
         Player::create(context, &mut self.world, false)?;
         Ok(())
     }
@@ -44,6 +48,15 @@ impl LevelScreenSystem {
             animator.update(data);
         }
 
+        // Update camera
+        let mut query = <(&PlayerState, &Position)>::query();
+        for (_, position) in query.iter(&self.world) {
+            if self.camera.is_some() {
+                let camera = self.camera.as_mut().unwrap();
+                camera.update(Some(position))?;
+            }
+        }
+
         if input.pressed(InputButton::Back) {
             self.first_update = true;
             *navigation = Navigation::TitleScreen;
@@ -59,15 +72,25 @@ impl LevelScreenSystem {
     pub fn draw(&self, context: &mut Context) -> GameResult {
         // Draw all animated sprites
         let mut query = <(&AnimatorData, &Animator, &Position)>::query();
-        for (data, animator, hotspot) in query.iter(&self.world) {
-            animator.draw(context, data, hotspot)?;
+        for (data, animator, position) in query.iter(&self.world) {
+            let hotspot = Position::wrap(if let Some(camera) = &self.camera {
+                camera.transform(position.0)
+            } else {
+                position.0
+            });
+            println!("Hotspot: {:?}", hotspot);
+            animator.draw(context, data, &hotspot)?;
         }
 
-        // Draw sensors
+        // Draw sensors and camera
         if self.debug {
             let mut query = <(&PlayerState, &Position, &PlayerSpeed)>::query();
             for (state, position, speed) in query.iter(&self.world) {
                 PlayerSensors::draw(context, state, position, speed)?;
+            }
+
+            if let Some(camera) = &self.camera {
+                camera.debug_draw(context)?;
             }
         }
 

@@ -25,7 +25,6 @@ fn main() -> GameResult {
     let window_setup = WindowSetup::default().title(GAME_NAME).vsync(false);
 
     let window_mode = WindowMode::default()
-        //.dimensions(1280.0, 720.0)
         //.fullscreen_type(FullscreenType::Desktop)
         .dimensions(854.0, 480.0)
         .resizable(false);

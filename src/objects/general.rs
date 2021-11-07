@@ -21,6 +21,16 @@ impl Position {
     pub fn new(x: f32, y: f32) -> Self {
         Self(Vec2::new(x, y))
     }
+
+    /// Create position from another
+    pub fn from(pos: &Self) -> Self {
+        Self(Vec2::new(pos.0.x, pos.0.y))
+    }
+
+    /// Wrap a vector into a Position struct
+    pub fn wrap(pos: Vec2) -> Self {
+        Self(pos.clone())
+    }
 }
 
 /// Represents a direction for anything. May be converted to
