@@ -12,6 +12,7 @@ pub struct LevelScreenSystem {
     first_update: bool,
     debug: bool,
     camera: Option<Camera>,
+    camera_timer: i32,
 }
 
 impl LevelScreenSystem {
@@ -24,6 +25,7 @@ impl LevelScreenSystem {
             first_update,
             debug,
             camera: None,
+            camera_timer: 0,
         }
     }
 
@@ -48,14 +50,29 @@ impl LevelScreenSystem {
             animator.update(data);
         }
 
+        // Update camera panning
+        self.camera_timer = {
+            let (up, down) = (
+                input.pressing(InputButton::Up),
+                input.pressing(InputButton::Down),
+            );
+            if (up && !down) || (!up && down) {
+                (self.camera_timer + 1).min(120)
+            } else {
+                (self.camera_timer - 1).max(0)
+            }
+        };
+
         // Update camera
         let mut query = <(&PlayerState, &Position, &PlayerSpeed)>::query();
         for (state, position, speed) in query.iter(&self.world) {
             if self.camera.is_some() {
-                use crate::objects::camera::CameraVerticalBehaviour;
+                use crate::objects::camera::{
+                    CameraDisplacementBehaviour, CameraVerticalBehaviour,
+                };
                 let camera = self.camera.as_mut().unwrap();
 
-                let behaviour = if !state.get_ground() {
+                let vbehaviour = if !state.get_ground() {
                     CameraVerticalBehaviour::RespectBounds
                 } else {
                     let ysp = speed.ysp.abs();
@@ -66,7 +83,19 @@ impl LevelScreenSystem {
                     }
                 };
 
-                camera.update(Some(position), behaviour)?;
+                let dbehaviour = if self.camera_timer >= 120 {
+                    match state.action {
+                        PlayerAction::LookingUp => CameraDisplacementBehaviour::LookUp,
+                        PlayerAction::Crouching => CameraDisplacementBehaviour::LookDown,
+                        _ => CameraDisplacementBehaviour::None,
+                    }
+                } else {
+                    CameraDisplacementBehaviour::None
+                };
+
+                camera.vertical_behaviour = vbehaviour;
+                camera.displacement_behaviour = dbehaviour;
+                camera.update(Some(position))?;
             }
         }
 
