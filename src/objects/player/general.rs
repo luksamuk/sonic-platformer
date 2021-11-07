@@ -32,11 +32,7 @@ impl Player {
             PlayerConstants::default()
         };
 
-        //let state = PlayerState::default();
-        let state = PlayerState {
-            ground: true,
-            ..PlayerState::default()
-        };
+        let state = PlayerState::default();
         let position = Position::new(30.0, 240.0);
         let speed = PlayerSpeed::default();
         let mut animation_data =
@@ -65,8 +61,6 @@ impl Player {
         let mut animator = Animator::default();
         animator.set("idle".to_string(), &animation_data);
 
-        // TODO: Hitboxes?
-
         Ok(world.push((state, constants, position, speed, animation_data, animator)))
     }
 
@@ -75,11 +69,7 @@ impl Player {
         for (state, position, speed) in query.iter_mut(world) {
             *position = Position::new(30.0, 240.0);
             *speed = PlayerSpeed::default();
-            //state = PlayerState::default();
-            *state = PlayerState {
-                ground: true,
-                ..PlayerState::default()
-            };
+            *state = PlayerState::default();
         }
     }
 }
