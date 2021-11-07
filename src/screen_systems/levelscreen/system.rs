@@ -82,7 +82,61 @@ impl LevelScreenSystem {
         Ok(())
     }
 
+    fn draw_test_graphics(&self, context: &mut Context) -> GameResult {
+        // Draw a grid for camera testing
+        use crate::objects::player::physics::FAKE_GROUND_Y;
+        use ggez::graphics::{self, Color, MeshBuilder};
+        use glam::*;
+        let mut builder = MeshBuilder::new();
+
+        // Crosses on background
+        for i in 0..30 {
+            for j in 0..30 {
+                let center = glam::vec2(100.0 * i as f32, 100.0 * j as f32);
+                let _ = builder
+                    .line(
+                        &[
+                            glam::vec2(center.x, center.y - 10.0),
+                            glam::vec2(center.x, center.y + 10.0),
+                        ],
+                        1.0,
+                        Color::new(0.0, 1.0, 1.0, 0.3),
+                    )?
+                    .line(
+                        &[
+                            glam::vec2(center.x - 10.0, center.y),
+                            glam::vec2(center.x + 10.0, center.y),
+                        ],
+                        1.0,
+                        Color::new(0.0, 1.0, 1.0, 0.3),
+                    )?;
+            }
+        }
+
+        // Representation for floor
+        let _ = builder.line(
+            &[
+                glam::vec2(0.0, FAKE_GROUND_Y + 16.0 + 5.0),
+                glam::vec2(3000.0, FAKE_GROUND_Y + 16.0 + 5.0),
+            ],
+            5.0,
+            Color::new(0.3, 0.0, 0.2, 0.5),
+        )?;
+
+        let mesh = builder.build(context)?;
+        let position = if let Some(camera) = &self.camera {
+            camera.transform(Vec2::ZERO)
+        } else {
+            Vec2::ZERO
+        };
+        graphics::draw(context, &mesh, (position, 0.0, Color::WHITE))?;
+        Ok(())
+    }
+
     pub fn draw(&self, context: &mut Context) -> GameResult {
+        // Draw test graphics
+        self.draw_test_graphics(context)?;
+
         // Draw all animated sprites
         let mut query = <(&AnimatorData, &Animator, &Position)>::query();
         for (data, animator, position) in query.iter(&self.world) {
