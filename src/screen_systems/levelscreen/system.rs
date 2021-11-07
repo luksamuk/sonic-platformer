@@ -103,7 +103,7 @@ impl LevelScreenSystem {
                 } else {
                     position.0
                 });
-                PlayerSensors::draw(context, state, &hotspot, speed)?;
+                PlayerSensors::debug_draw(context, state, &hotspot, speed)?;
             }
 
             if let Some(camera) = &self.camera {

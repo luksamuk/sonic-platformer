@@ -5,6 +5,14 @@ use ggez::GameResult;
 use glam::*;
 
 /// Represents data related to camera.
+/// 
+/// Remember that this is not a component. Each screen should have
+/// its camera instantiated, and it should be updated according to
+/// whatever objects it follows.
+/// 
+/// The camera is to be mostly understood as this element which
+/// recalculates elements' position for rendering, and is not an
+/// actual object to be contained on the scene.
 #[derive(Debug, PartialEq)]
 pub struct Camera {
     pub position: Position,
@@ -12,9 +20,29 @@ pub struct Camera {
     center: Vec2,
 }
 
+
+/// Describes the vertical behaviour of the camera.
+/// 
+/// This behaviour mostly relates to how the Player is behaving
+/// on scene.
 pub enum CameraVerticalBehaviour {
+    /// When the player is on the ground, follow it so that
+    /// the camera is always centered on the Y axis. The camera
+    /// lags behind slowly, but finds the player at a pace of 6
+    /// pixels per frame at most.
     CenterYSlow,
+    /// When the player is on the ground, follow it so that
+    /// the camera is always centered on the Y axis. The camera
+    /// lags behind slowly, but finds the player at a pace of 16
+    /// pixels per frame at most.
     CenterYFast,
+    /// Default behaviour, and also the behaviour whenever the
+    /// player is in the air. The camera respects the boundaries
+    /// that were set, so that the player lags behind on Y axis.
+    /// If it goes beyond the minimum or maximum Y boundaries, the
+    /// camera finds the player at a pace of 16 pixels per frame
+    /// at most, so that the player is contained inside the
+    /// boundaries again.
     RespectBounds,
 }
 
@@ -24,6 +52,7 @@ fn get_screen_center(context: &Context) -> Vec2 {
 }
 
 impl Camera {
+    /// Create a new camera object with its default boundaries.
     pub fn new(context: &Context) -> Self {
         Self {
             position: Position::default(),
@@ -32,6 +61,10 @@ impl Camera {
         }
     }
 
+    /// Transform a vertex so that it is contained on screen.GameResult
+    /// 
+    /// This function should be used to recalculate the position of
+    /// any elements being drawn on screen.
     pub fn transform(&self, vertex: Vec2) -> Vec2 {
         (vertex.clone() - self.position.0) + self.center
     }
@@ -46,6 +79,9 @@ impl Camera {
         )
     }
 
+    /// Update camera position according to its behaviour, specially
+    /// if the camera is supposed to follow any object on screen, whose
+    /// position may be optionally passed as well.
     pub fn update(
         &mut self,
         followed: Option<&Position>,
@@ -102,6 +138,8 @@ impl Camera {
         Ok(())
     }
 
+    /// Draw a debug indicator on the center of screen so that one can
+    /// debug the behaviour of camera.
     pub fn debug_draw(&self, context: &mut Context) -> GameResult {
         let camera_mesh = MeshBuilder::new()
             .rectangle(DrawMode::stroke(1.0), self.border, Color::WHITE)?

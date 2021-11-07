@@ -14,7 +14,7 @@ pub struct PlayerSensors;
 impl PlayerSensors {
     /// Draws a representation for player sensors. Requires player data
     /// such as its state, position and rotation.
-    pub fn draw(
+    pub fn debug_draw(
         context: &mut Context,
         state: &PlayerState,
         position: &Position,
