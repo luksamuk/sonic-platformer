@@ -158,7 +158,7 @@ impl PlayerSensors {
             .rectangle(
                 DrawMode::fill(),
                 hitbox_rect,
-                Color::new(1.0, 0.0, 1.0, 0.5),
+                Color::new(1.0, 0.0, 1.0, 0.1),
             )?
             .build(context)?;
 
