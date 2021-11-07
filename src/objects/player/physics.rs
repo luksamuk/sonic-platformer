@@ -4,7 +4,7 @@ use crate::objects::general::Position;
 use ggez::GameResult;
 use legion::*;
 
-const FAKE_GROUND_Y: f32 = 800.0;
+pub const FAKE_GROUND_Y: f32 = 800.0;
 
 pub fn update(world: &mut World, input: &Input) -> GameResult {
     use crate::input::InputButton;
