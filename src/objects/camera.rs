@@ -155,6 +155,6 @@ impl Camera {
 
         let screen_center = get_screen_center(context);
 
-        graphics::draw(context, &camera_mesh, (screen_center, 0.0, Color::WHITE))
+        graphics::draw(context, &camera_mesh, (screen_center, 0.0, Color::new(1.0, 1.0, 1.0, 0.1)))
     }
 }

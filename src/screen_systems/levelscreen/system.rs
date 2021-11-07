@@ -133,6 +133,43 @@ impl LevelScreenSystem {
         Ok(())
     }
 
+    fn draw_debug_text(
+        &self,
+        context: &mut Context,
+        state: &PlayerState,
+        speed: &PlayerSpeed,
+        pos: &Position,
+    ) -> GameResult {
+        use ggez::graphics::{self, Color, PxScale, Text, TextFragment};
+
+        let mut hud_text = format!(
+            "ACTION {:?}\n\
+             POSX   {:>13.6}\n\
+             POSY   {:>13.6}\n\
+             GSP    {:>13.6}\n\
+             XSP    {:>13.6}\n\
+             YSP    {:>13.6}\n\
+             THETA  {:>13.6}",
+            state.action, pos.0.x, pos.0.y, speed.gsp, speed.xsp, speed.ysp, speed.angle,
+        );
+
+        if let Some(camera) = &self.camera {
+            hud_text = format!(
+                "{}\n\
+            CAMX   {:>13.6}\n\
+            CAMY   {:>13.6}",
+                hud_text, camera.position.0.x, camera.position.0.y,
+            );
+        }
+
+        let text = TextFragment::new(hud_text)
+            .color(Color::WHITE)
+            .scale(PxScale::from(12.0));
+        let text = Text::new(text);
+        graphics::queue_text(context, &text, glam::vec2(10.0, 10.0), None);
+        Ok(())
+    }
+
     pub fn draw(&self, context: &mut Context) -> GameResult {
         // Draw test graphics
         self.draw_test_graphics(context)?;
@@ -158,6 +195,7 @@ impl LevelScreenSystem {
                     position.0
                 });
                 PlayerSensors::debug_draw(context, state, &hotspot, speed)?;
+                self.draw_debug_text(context, state, speed, position)?;
             }
 
             if let Some(camera) = &self.camera {
