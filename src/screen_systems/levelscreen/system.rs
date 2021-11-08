@@ -90,7 +90,13 @@ impl LevelScreenSystem {
                         _ => CameraDisplacementBehaviour::None,
                     }
                 } else {
-                    CameraDisplacementBehaviour::None
+                    if speed.xsp >= 6.0 {
+                        CameraDisplacementBehaviour::ExtendRight
+                    } else if speed.xsp <= -6.0 {
+                        CameraDisplacementBehaviour::ExtendLeft
+                    } else {
+                        CameraDisplacementBehaviour::None
+                    }
                 };
 
                 camera.vertical_behaviour = vbehaviour;

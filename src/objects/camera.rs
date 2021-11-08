@@ -54,7 +54,7 @@ pub enum CameraVerticalBehaviour {
 }
 
 /// Describes the displacement behaviour of the camera.
-/// 
+///
 /// The displacement behaviour changes the camera center so that
 /// the camera slowly pans towards some direction. This is
 /// particularly useful to make the character look up or down,
@@ -69,6 +69,10 @@ pub enum CameraDisplacementBehaviour {
     /// Slowly moves down the camera until it reaches
     /// 88 pixels down.
     LookDown,
+    /// Slowly moves the camera until it reaches 64 pixels left.
+    ExtendLeft,
+    /// Slowly moves the camera until it reaches 64 pixels right.
+    ExtendRight,
 }
 
 fn get_screen_center(context: &Context) -> Vec2 {
@@ -157,24 +161,35 @@ impl Camera {
             };
         }
 
-        // Apply displacement behaviour
-        match self.displacement_behaviour {
-            CameraDisplacementBehaviour::None => {
-                self.displacement.y = if self.displacement.y > 0.0 {
+        // Apply X axis displacement behaviour
+        self.displacement.x = match self.displacement_behaviour {
+            CameraDisplacementBehaviour::ExtendRight => (self.displacement.x + 2.0).min(64.0),
+            CameraDisplacementBehaviour::ExtendLeft => (self.displacement.x - 2.0).max(-64.0),
+            _ => {
+                if self.displacement.x > 0.0 {
+                    (self.displacement.x - 2.0).max(0.0)
+                } else if self.displacement.x < 0.0 {
+                    (self.displacement.x + 2.0).min(0.0)
+                } else {
+                    0.0
+                }
+            }
+        };
+
+        // Apply Y axis displacement behaviour
+        self.displacement.y = match self.displacement_behaviour {
+            CameraDisplacementBehaviour::LookDown => (self.displacement.y + 2.0).min(88.0),
+            CameraDisplacementBehaviour::LookUp => (self.displacement.y - 2.0).max(-104.0),
+            _ => {
+                if self.displacement.y > 0.0 {
                     (self.displacement.y - 2.0).max(0.0)
                 } else if self.displacement.y < 0.0 {
                     (self.displacement.y + 2.0).min(0.0)
                 } else {
                     0.0
-                };
+                }
             }
-            CameraDisplacementBehaviour::LookDown => {
-                self.displacement.y = (self.displacement.y + 2.0).min(88.0)
-            }
-            CameraDisplacementBehaviour::LookUp => {
-                self.displacement.y = (self.displacement.y - 2.0).max(-104.0)
-            }
-        }
+        };
 
         // Define position considering displacement. Also prevent
         // going beyond minimum position
