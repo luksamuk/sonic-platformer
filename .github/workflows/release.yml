@@ -1,6 +1,6 @@
 # Amplamente inspirado por https://github.com/brooks-builds/bbecs
 
-name: Geração de Versão Automatizada
+name: Geração de Versão
 
 on:
   push:
@@ -109,10 +109,13 @@ jobs:
       - name: Compilação de Versão
         run: cargo rustc --release --bin sonic-platformer -- -Clink-args="/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup"
       
+      - name: Preparação dos recursos
+        run: mkdir release && xcopy /E /I .\resources .\release\resources
+
       - name: Compactação de artefatos
         uses: vimtor/action-zip@v1
         with:
-          files: ./target/release/sonic-platformer.exe resources/
+          files: ./target/release/sonic-platformer.exe ./release
           dest: sonic-platformer.zip
       
       - name: Upload de artefatos

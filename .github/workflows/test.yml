@@ -1,6 +1,6 @@
 # Amplamente inspirado por https://github.com/brooks-builds/bbecs
 
-name: Testes Automatizados
+name: Testes Automáticos
 
 # Os testes ocorrem na geração de pull requests para a branch master
 # e também na geração de tags de versão.
