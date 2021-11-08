@@ -99,7 +99,7 @@ impl Camera {
     /// This function should be used to recalculate the position of
     /// any elements being drawn on screen.
     pub fn transform(&self, vertex: Vec2) -> Vec2 {
-        (vertex.clone() - self.position.0) + self.center
+        (vertex - self.position.0) + self.center
     }
 
     fn boundaries(&self) -> (f32, f32, f32, f32) {

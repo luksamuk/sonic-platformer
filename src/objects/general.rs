@@ -29,7 +29,7 @@ impl Position {
 
     /// Wrap a vector into a Position struct
     pub fn wrap(pos: Vec2) -> Self {
-        Self(pos.clone())
+        Self(pos)
     }
 }
 

@@ -89,14 +89,12 @@ impl LevelScreenSystem {
                         PlayerAction::Crouching => CameraDisplacementBehaviour::LookDown,
                         _ => CameraDisplacementBehaviour::None,
                     }
+                } else if speed.xsp >= 6.0 {
+                    CameraDisplacementBehaviour::ExtendRight
+                } else if speed.xsp <= -6.0 {
+                    CameraDisplacementBehaviour::ExtendLeft
                 } else {
-                    if speed.xsp >= 6.0 {
-                        CameraDisplacementBehaviour::ExtendRight
-                    } else if speed.xsp <= -6.0 {
-                        CameraDisplacementBehaviour::ExtendLeft
-                    } else {
-                        CameraDisplacementBehaviour::None
-                    }
+                    CameraDisplacementBehaviour::None
                 };
 
                 camera.vertical_behaviour = vbehaviour;
