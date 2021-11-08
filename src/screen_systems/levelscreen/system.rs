@@ -59,7 +59,7 @@ impl LevelScreenSystem {
             if (up && !down) || (!up && down) {
                 (self.camera_timer + 1).min(120)
             } else {
-                (self.camera_timer - 1).max(0)
+                0
             }
         };
 
