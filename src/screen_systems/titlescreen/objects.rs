@@ -8,6 +8,8 @@ use ggez::GameResult;
 use glam::Vec2;
 use legion::{IntoQuery, World};
 
+/// A title screen object representing a selectable option
+/// on a menu.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Marker {
     pub num_options: u64,
@@ -15,6 +17,7 @@ pub struct Marker {
 }
 
 impl Marker {
+    /// Updates all markers in the world.
     pub fn update(world: &mut World, navigation: &mut Navigation, input: &Input) -> GameResult {
         let mut query = <(&Marker, &mut Tag, &mut Position)>::query();
         for (marker, tag, position) in query.iter_mut(world) {
@@ -39,6 +42,7 @@ impl Marker {
         Ok(())
     }
 
+    /// Draws all markers in the world.
     pub fn draw(world: &World, context: &mut Context, hotspot: Vec2) -> GameResult {
         let mut query = <(&Marker, &Position)>::query();
         for (_, position) in query.iter(world) {

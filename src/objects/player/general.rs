@@ -64,6 +64,7 @@ impl Player {
         Ok(world.push((state, constants, position, speed, animation_data, animator)))
     }
 
+    /// Respawns all players in the world.
     pub fn respawn_all(world: &mut World) {
         let mut query = <(&mut PlayerState, &mut Position, &mut PlayerSpeed)>::query();
         for (state, position, speed) in query.iter_mut(world) {

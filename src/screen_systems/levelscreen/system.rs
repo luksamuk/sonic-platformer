@@ -7,6 +7,7 @@ use crate::screen_systems::Navigation;
 use ggez::{Context, GameResult};
 use legion::*;
 
+/// Defines the state for a level screen system.
 pub struct LevelScreenSystem {
     world: World,
     first_update: bool,
@@ -16,6 +17,7 @@ pub struct LevelScreenSystem {
 }
 
 impl LevelScreenSystem {
+    /// Creates a new level screen system.
     pub fn new() -> Self {
         let world = World::default();
         let first_update = true;
@@ -29,12 +31,14 @@ impl LevelScreenSystem {
         }
     }
 
+    /// Sets up the initial state of the level screen system.
     pub fn setup(&mut self, context: &mut Context) -> GameResult {
         self.camera = Some(Camera::new(context));
         Player::create(context, &mut self.world, false)?;
         Ok(())
     }
 
+    /// Updates the level screen system.
     pub fn update(&mut self, navigation: &mut Navigation, input: &Input) -> GameResult {
         if self.first_update {
             self.first_update = false;
@@ -203,6 +207,7 @@ impl LevelScreenSystem {
         Ok(())
     }
 
+    /// Draws the level screen.
     pub fn draw(&self, context: &mut Context) -> GameResult {
         // Draw test graphics
         self.draw_test_graphics(context)?;

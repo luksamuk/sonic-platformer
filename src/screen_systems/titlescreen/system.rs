@@ -8,6 +8,7 @@ use ggez::Context;
 use ggez::GameResult;
 use legion::*;
 
+/// Defines the state of the title screen system.
 pub struct TitleScreenSystem {
     title: TextFragment,
     play: TextFragment,
@@ -16,6 +17,7 @@ pub struct TitleScreenSystem {
 }
 
 impl TitleScreenSystem {
+    /// Creates a new title screen system.
     pub fn new(game_title: &str) -> Self {
         let title = TextFragment::new(game_title)
             .color(Color::WHITE)
@@ -36,6 +38,7 @@ impl TitleScreenSystem {
         }
     }
 
+    /// Sets up the title screen system's initial state.
     pub fn setup(&mut self, _context: &mut Context) -> GameResult {
         let _ = self.world.push((
             objects::Marker {
@@ -49,10 +52,12 @@ impl TitleScreenSystem {
         Ok(())
     }
 
+    /// Updates the title screen system.
     pub fn update(&mut self, navigation: &mut Navigation, input: &Input) -> GameResult {
         objects::Marker::update(&mut self.world, navigation, input)
     }
 
+    /// Draws the title screen system.
     pub fn draw(&self, context: &mut Context) -> GameResult {
         let title = Text::new(self.title.clone());
         let play = Text::new(self.play.clone());

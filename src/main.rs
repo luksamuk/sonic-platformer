@@ -9,7 +9,7 @@ use sonic_platformer::*;
 use std::env;
 use std::path::PathBuf;
 
-const GAME_NAME: &str = "Platformer";
+const GAME_NAME: &str = "sonic-platformer";
 
 fn get_resource_dir() -> PathBuf {
     if let Ok(manifest_dir) = env::var("CARGO_MANIFEST_DIR") {

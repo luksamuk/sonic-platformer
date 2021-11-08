@@ -4,8 +4,14 @@ use crate::objects::general::Position;
 use ggez::GameResult;
 use legion::*;
 
+/// Y coordinate of a fake ground for the player.
+/// Should be removed once collision is working.
 pub const FAKE_GROUND_Y: f32 = 800.0;
 
+/// Updates the player's logic based on the input.
+/// 
+/// This is the entry point for updating anything related
+/// to physics, including movement and collision.
 pub fn update(world: &mut World, input: &Input) -> GameResult {
     use crate::input::InputButton;
     use crate::objects::general::*;

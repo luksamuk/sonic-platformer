@@ -13,6 +13,7 @@ use screen_systems::ScreenSystems;
 
 const DESIRED_FPS: u32 = 60;
 
+/// Represents the main game state.
 pub struct MainState {
     navigation: Navigation,
     screen_systems: ScreenSystems,
@@ -20,6 +21,7 @@ pub struct MainState {
 }
 
 impl MainState {
+    /// Creates a new MainState.
     pub fn new(game_name: &'static str) -> GameResult<Self> {
         let navigation = Navigation::default();
         let screen_systems = ScreenSystems::new(game_name);
@@ -31,6 +33,8 @@ impl MainState {
         })
     }
 
+    /// Sets up the MainState by loading assets and setting up the initial
+    /// state.
     pub fn setup(&mut self, context: &mut Context) -> GameResult {
         self.screen_systems.setup(context)?;
         Ok(())

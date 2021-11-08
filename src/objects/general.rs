@@ -42,6 +42,7 @@ pub enum Direction {
 }
 
 impl Into<f32> for Direction {
+    // Converts a direction into a unitary float value
     fn into(self) -> f32 {
         match self {
             Direction::Left => -1.0,

@@ -3,6 +3,7 @@ use crate::objects::animation::{Animator, AnimatorData};
 use ggez::GameResult;
 use legion::*;
 
+/// Performs updates on the animation component of the player.
 pub fn update(world: &mut World) -> GameResult {
     let mut query = <(&PlayerState, &PlayerSpeed, &mut Animator, &AnimatorData)>::query();
     for (state, speed, animator, animdata) in query.iter_mut(world) {

@@ -1,5 +1,7 @@
 #![allow(dead_code)]
 
+/// Enumeration to determine the current
+/// screen being drawn and updated.
 pub enum Navigation {
     TitleScreen,
     LevelScreen,
