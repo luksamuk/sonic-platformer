@@ -3,10 +3,10 @@ use crate::objects::animation::*;
 use crate::objects::camera::Camera;
 use crate::objects::general::*;
 use crate::objects::player::{self, *};
+use crate::objects::sprite_atlas::SpriteAtlas;
 use crate::screen_systems::Navigation;
 use ggez::{Context, GameResult};
 use legion::*;
-use crate::objects::sprite_atlas::SpriteAtlas;
 
 /// Defines the state for a level screen system.
 pub struct LevelScreenSystem {

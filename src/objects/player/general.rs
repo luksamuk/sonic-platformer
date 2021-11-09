@@ -1,8 +1,6 @@
-use super::PlayerAction;
 use super::PlayerConstants;
 use super::PlayerSpeed;
 use super::PlayerState;
-use crate::input::Input;
 use crate::objects::general::Position;
 use ggez::Context;
 use ggez::GameResult;
@@ -33,11 +31,6 @@ impl Player {
             PlayerConstants::default()
         };
 
-        let built = AnimatorBuilder::new()
-            .add_animation("run", &[11, 12, 13, 14], true, 0, 63)?
-            .add_animation("skid", &[23], true, 0, 1000)?
-            .build();
-
         let state = PlayerState::default();
         let position = Position::new(30.0, 240.0);
         let speed = PlayerSpeed::default();
@@ -67,14 +60,7 @@ impl Player {
 
         animator.set("idle".to_string());
 
-        Ok(world.push((
-            state,
-            constants,
-            position,
-            speed,
-            atlas,
-            animator,
-        )))
+        Ok(world.push((state, constants, position, speed, atlas, animator)))
     }
 
     /// Respawns all players in the world.

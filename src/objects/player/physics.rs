@@ -1,6 +1,5 @@
 use super::{PlayerAction, PlayerConstants, PlayerSpeed, PlayerState};
 use crate::input::Input;
-use crate::objects::general::Position;
 use ggez::GameResult;
 use legion::*;
 
@@ -9,7 +8,7 @@ use legion::*;
 pub const FAKE_GROUND_Y: f32 = 800.0;
 
 /// Updates the player's logic based on the input.
-/// 
+///
 /// This is the entry point for updating anything related
 /// to physics, including movement and collision.
 pub fn update(world: &mut World, input: &Input) -> GameResult {

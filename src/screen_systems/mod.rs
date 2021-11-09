@@ -12,7 +12,7 @@ pub use titlescreen::system::TitleScreenSystem;
 
 /// Represents a collection of screen systems, which can
 /// be switched between.
-/// 
+///
 /// The screen system is responsible for updating and drawing
 /// the current screen.
 pub struct ScreenSystems {

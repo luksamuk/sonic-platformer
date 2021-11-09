@@ -1,7 +1,6 @@
 use super::sprite_atlas::SpriteAtlas;
 use crate::objects::general::Direction;
 use crate::objects::general::Position;
-use ggez::graphics::{self, DrawParam, Image, Rect};
 use ggez::{Context, GameError, GameResult};
 use glam::*;
 use std::collections::HashMap;
