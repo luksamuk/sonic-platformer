@@ -5,27 +5,22 @@ use ggez::{Context, GameError, GameResult};
 use glam::*;
 use std::collections::HashMap;
 use std::time::{Duration, Instant};
+use super::sprite_atlas::SpriteAtlas;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct AnimatorData {
-    pub atlas: Image,
+    pub atlas: SpriteAtlas,
     pub data: HashMap<String, (Vec<u32>, bool, usize, Duration)>,
-    pub frame_size: Vec2,
 }
 
 impl AnimatorData {
-    pub fn new(context: &mut Context, atlas_path: &str, frame_size: Vec2) -> GameResult<Self> {
-        let atlas = Image::new(context, atlas_path)?;
+    pub fn new(context: &mut Context, path: &str, frame_size: Vec2) -> GameResult<Self> {
+        let atlas = SpriteAtlas::new(context, path, frame_size)?;
 
         Ok(Self {
             atlas,
             data: HashMap::new(),
-            frame_size,
         })
-    }
-
-    pub fn get_image_size(&self) -> Vec2 {
-        Vec2::new(self.atlas.width() as f32, self.atlas.height() as f32)
     }
 
     pub fn add_animation(
@@ -171,20 +166,9 @@ impl Animator {
         hotspot: &Position,
     ) -> GameResult {
         if animdata.data.get(&self.animation_name).is_some() {
-            let frame = self.calculate_frame(animdata.get_image_size(), animdata.frame_size);
-            let floatdir: f32 = self.direction.into();
-            let xscale = floatdir * self.scale;
-            let half_frame = Vec2::new(
-                (animdata.frame_size.x / 2.0) * xscale,
-                (animdata.frame_size.y / 2.0) * self.scale,
-            );
-            let destination = hotspot.0 - half_frame;
-
-            let params = DrawParam::default()
-                .src(frame)
-                .scale(Vec2::new(xscale, self.scale))
-                .dest(destination);
-            graphics::draw(context, &animdata.atlas, params)?;
+            let direction: f32 = self.direction.into();
+            let xscale = direction * self.scale;
+            animdata.atlas.draw(context, self.current_frame, hotspot.0, glam::vec2(xscale, self.scale))?;
         }
         Ok(())
     }
