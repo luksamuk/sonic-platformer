@@ -1,3 +1,4 @@
+use super::sprite_atlas::SpriteAtlas;
 use crate::objects::general::Direction;
 use crate::objects::general::Position;
 use ggez::graphics::{self, DrawParam, Image, Rect};
@@ -5,22 +6,17 @@ use ggez::{Context, GameError, GameResult};
 use glam::*;
 use std::collections::HashMap;
 use std::time::{Duration, Instant};
-use super::sprite_atlas::SpriteAtlas;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct AnimatorData {
-    pub atlas: SpriteAtlas,
     pub data: HashMap<String, (Vec<u32>, bool, usize, Duration)>,
 }
 
 impl AnimatorData {
-    pub fn new(context: &mut Context, path: &str, frame_size: Vec2) -> GameResult<Self> {
-        let atlas = SpriteAtlas::new(context, path, frame_size)?;
-
-        Ok(Self {
-            atlas,
+    pub fn new() -> Self {
+        Self {
             data: HashMap::new(),
-        })
+        }
     }
 
     pub fn add_animation(
@@ -144,31 +140,22 @@ impl Animator {
         }
     }
 
-    pub fn calculate_frame(&self, img_size: Vec2, frame_size: Vec2) -> Rect {
-        let frames_per_line = img_size.x / frame_size.x;
-        let frame_line = (self.current_frame as f32 / frames_per_line).trunc();
-        let frame_column = self.current_frame as f32 % frames_per_line;
-
-        let frame_size_texels = frame_size / img_size;
-
-        Rect::new(
-            frame_column * frame_size_texels.x,
-            frame_line * frame_size_texels.y,
-            frame_size_texels.x,
-            frame_size_texels.y,
-        )
-    }
-
     pub fn draw(
         &self,
         context: &mut Context,
+        atlas: &SpriteAtlas,
         animdata: &AnimatorData,
         hotspot: &Position,
     ) -> GameResult {
         if animdata.data.get(&self.animation_name).is_some() {
             let direction: f32 = self.direction.into();
             let xscale = direction * self.scale;
-            animdata.atlas.draw(context, self.current_frame, hotspot.0, glam::vec2(xscale, self.scale))?;
+            atlas.draw(
+                context,
+                self.current_frame,
+                hotspot.0,
+                glam::vec2(xscale, self.scale),
+            )?;
         }
         Ok(())
     }
