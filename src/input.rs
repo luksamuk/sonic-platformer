@@ -45,7 +45,7 @@ pub struct InputState {
 }
 
 /// A structure describing the input system.
-/// 
+///
 /// This structure is used to track the state of the
 /// input system in general, and to be updated by using
 /// the proper key down/up functions related to its input
