@@ -14,7 +14,7 @@ pub struct AnimationData {
     pub speed: Duration,
 }
 /// A helper structure to build an animator.
-/// 
+///
 /// Allows you to build an animator by adding animations to it.
 pub struct AnimatorBuilder {
     pub data: HashMap<String, AnimationData>,
@@ -156,7 +156,7 @@ impl Animator {
     }
 
     /// Draws the current animation frame.
-    /// 
+    ///
     /// Requires the draw context and the sprite atlas, plus the center position
     /// of the sprite.
     pub fn draw(
