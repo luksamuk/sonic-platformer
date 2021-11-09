@@ -2,6 +2,7 @@ use ggez::graphics::{self, DrawParam, Image, Rect};
 use ggez::{Context, GameResult};
 use glam::*;
 
+#[derive(Debug, Clone, PartialEq)]
 pub struct SpriteAtlas {
     pub texture: Image,
     pub frame_size: Vec2,
@@ -25,9 +26,9 @@ impl SpriteAtlas {
     fn calculate_frame(&self, frame: u32) -> Rect {
         let image_size = self.get_image_size();
         let frames_per_line = image_size.x / self.frame_size.x;
-        let frame_line = (frame as f32 / frames_per_line as f32).trunc();
+        let frame_line = (frame as f32 / frames_per_line).trunc();
         let frame_column = frame as f32 % frames_per_line;
-        let frame_size_texels = self.frame_size * image_size;
+        let frame_size_texels = self.frame_size / image_size;
 
         Rect::new(
             frame_column * frame_size_texels.x,
