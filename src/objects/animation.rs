@@ -8,11 +8,18 @@ use std::collections::HashMap;
 use std::time::{Duration, Instant};
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct AnimatorData {
-    pub data: HashMap<String, (Vec<u32>, bool, usize, Duration)>,
+pub struct AnimationData {
+    pub frames: Vec<u32>,
+    pub loops: bool,
+    pub loopback_index: usize,
+    pub speed: Duration,
 }
 
-impl AnimatorData {
+pub struct AnimatorBuilder {
+    pub data: HashMap<String, AnimationData>,
+}
+
+impl AnimatorBuilder {
     pub fn new() -> Self {
         Self {
             data: HashMap::new(),
@@ -24,35 +31,32 @@ impl AnimatorData {
         name: &str,
         frames: &[u32],
         loops: bool,
-        loopback: usize,
-        millis_per_frame: u64,
-    ) -> GameResult {
-        if loops && loopback >= frames.len() {
+        loopback_index: usize,
+        ms_per_frame: u64,
+    ) -> GameResult<&mut Self> {
+        if loops && loopback_index >= frames.len() {
             Err(GameError::ConfigError(String::from(
                 "Animation loopback frame index must be valid",
             )))
         } else {
             self.data.insert(
-                name.trim().to_owned(),
-                (
-                    Vec::from(frames),
+                name.to_string(),
+                AnimationData {
+                    frames: Vec::from(frames),
                     loops,
-                    loopback,
-                    Duration::from_millis(millis_per_frame),
-                ),
+                    loopback_index,
+                    speed: Duration::from_millis(ms_per_frame),
+                },
             );
-            Ok(())
+            Ok(self)
         }
     }
 
-    pub fn with_data(
-        &mut self,
-        data_set: &[(&str, &[u32], bool, usize, u64)],
-    ) -> GameResult<&Self> {
-        for data in data_set {
-            self.add_animation(data.0, data.1, data.2, data.3, data.4)?;
+    pub fn build(&self) -> Animator {
+        Animator {
+            data: self.data.clone(),
+            ..Animator::default()
         }
-        Ok(self)
     }
 }
 
@@ -65,6 +69,7 @@ pub struct Animator {
     pub direction: Direction,
     scale: f32,
     frame_duration: Duration,
+    data: HashMap<String, AnimationData>,
 }
 
 impl Default for Animator {
@@ -77,6 +82,7 @@ impl Default for Animator {
             direction: Direction::Right,
             scale: 1.0,
             frame_duration: Duration::from_millis(16),
+            data: HashMap::new(),
         }
     }
 }
@@ -86,14 +92,14 @@ impl Animator {
         self.animation_name.clone()
     }
 
-    pub fn set(&mut self, animation: String, animdata: &AnimatorData) {
+    pub fn set(&mut self, animation: String) {
         // Set new animation, but leave current frame intact.
         if self.animation_name != animation {
             self.animation_name = animation.trim().to_string();
             self.frame_count = 0;
             self.last_update = Instant::now();
-            if let Some(data) = animdata.data.get(&animation) {
-                self.frame_duration = data.3;
+            if let Some(data) = self.data.get(&animation) {
+                self.frame_duration = data.speed;
             }
         }
     }
@@ -106,9 +112,8 @@ impl Animator {
         self.frame_duration = Duration::from_millis(duration);
     }
 
-    // TODO: Animation data should be refactored! Using tuples is too intricate now.
-    pub fn update(&mut self, animdata: &AnimatorData) {
-        if let Some(data) = animdata.data.get(&self.animation_name) {
+    pub fn update(&mut self) {
+        if let Some(data) = self.data.get(&self.animation_name) {
             let now = Instant::now();
             let delta = (now - self.last_update) as Duration;
             if delta > self.frame_duration {
@@ -119,24 +124,23 @@ impl Animator {
                     self.last_update = now;
 
                     // Increment frame count and handle loop
-                    self.frame_count = if data.1 {
-                        // If loops
+                    self.frame_count = if data.loops {
                         let new_frame = self.frame_count + elapsed_frames;
-                        if new_frame > data.0.len() - 1 {
-                            let extra_frames = new_frame - (data.0.len() - 1);
-                            data.2 + extra_frames - 1 // Loopback frame
+                        if new_frame > data.frames.len() - 1 {
+                            let extra_frames = new_frame - (data.frames.len() - 1);
+                            data.loopback_index + extra_frames - 1 // Loopback frame
                         } else {
                             new_frame
                         }
-                    } else if self.frame_count > (data.0.len() - 1) {
-                        data.0.len() - 1
+                    } else if self.frame_count > (data.frames.len() - 1) {
+                        data.frames.len() - 1
                     } else {
                         self.frame_count + elapsed_frames
                     };
                 }
             }
             // Fetch animation frame number
-            self.current_frame = *data.0.get(self.frame_count).unwrap_or(&0);
+            self.current_frame = *data.frames.get(self.frame_count).unwrap_or(&0);
         }
     }
 
@@ -144,10 +148,9 @@ impl Animator {
         &self,
         context: &mut Context,
         atlas: &SpriteAtlas,
-        animdata: &AnimatorData,
         hotspot: &Position,
     ) -> GameResult {
-        if animdata.data.get(&self.animation_name).is_some() {
+        if self.data.get(&self.animation_name).is_some() {
             let direction: f32 = self.direction.into();
             let xscale = direction * self.scale;
             atlas.draw(
