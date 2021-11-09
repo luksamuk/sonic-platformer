@@ -2,14 +2,26 @@ use ggez::graphics::{self, DrawParam, Image, Rect};
 use ggez::{Context, GameResult};
 use glam::*;
 
+/// A sprite atlas is a collection of frames that can be used to draw
+/// a single sprite.
+/// 
+/// Frames on the sprite atlas are assumed to be arranged in a grid,
+/// numerated from 0 in the left-right, top-bottom order, respectively,
+/// and always equally spaced.
 #[derive(Debug, Clone, PartialEq)]
 pub struct SpriteAtlas {
+    /// The image that contains the frames.
     pub texture: Image,
+    /// The size of each frame.
     pub frame_size: Vec2,
     half_frame: Vec2,
 }
 
 impl SpriteAtlas {
+    /// Creates a new sprite atlas from an image.
+    /// 
+    /// The path to the image is relative to the `resources` directory,
+    /// and the frame size is required in pixels.
     pub fn new(context: &mut Context, path: &str, frame_size: Vec2) -> GameResult<Self> {
         let texture = Image::new(context, path)?;
         Ok(Self {
@@ -19,6 +31,7 @@ impl SpriteAtlas {
         })
     }
 
+    /// Gets the size of the entire sprite atlas.
     pub fn get_image_size(&self) -> Vec2 {
         glam::vec2(self.texture.width() as f32, self.texture.height() as f32)
     }
@@ -38,6 +51,10 @@ impl SpriteAtlas {
         )
     }
 
+    /// Draws a frame of the sprite atlas.
+    /// 
+    /// Requires a drawing context, the number of the frame, the center position
+    /// of the sprite on screen, and a scale factor related to each axis.
     pub fn draw(
         &self,
         context: &mut Context,

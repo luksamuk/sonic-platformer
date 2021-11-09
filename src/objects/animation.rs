@@ -13,18 +13,22 @@ pub struct AnimationData {
     pub loopback_index: usize,
     pub speed: Duration,
 }
-
+/// A helper structure to build an animator.
+/// 
+/// Allows you to build an animator by adding animations to it.
 pub struct AnimatorBuilder {
     pub data: HashMap<String, AnimationData>,
 }
 
 impl AnimatorBuilder {
+    /// Creates a new animator builder.
     pub fn new() -> Self {
         Self {
             data: HashMap::new(),
         }
     }
 
+    /// Adds an animation to the builder.
     pub fn add_animation(
         &mut self,
         name: &str,
@@ -51,6 +55,7 @@ impl AnimatorBuilder {
         }
     }
 
+    /// Builds the animator.
     pub fn build(&self) -> Animator {
         Animator {
             data: self.data.clone(),
@@ -59,6 +64,8 @@ impl AnimatorBuilder {
     }
 }
 
+/// An animator structure, responsible for managing and
+/// storing information related to animations.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Animator {
     animation_name: String,
@@ -87,10 +94,12 @@ impl Default for Animator {
 }
 
 impl Animator {
+    /// Gets the current animation name.
     pub fn get_name(&self) -> String {
         self.animation_name.clone()
     }
 
+    /// Sets the current animation by its name, if it is registered.
     pub fn set(&mut self, animation: String) {
         // Set new animation, but leave current frame intact.
         if self.animation_name != animation {
@@ -103,14 +112,17 @@ impl Animator {
         }
     }
 
+    /// Sets the duration of a single animation frame.
     pub fn set_duration(&mut self, duration: Duration) {
         self.frame_duration = duration;
     }
 
+    /// Sets the duration of a single animation frame, in milliseconds.
     pub fn set_duration_ms(&mut self, duration: u64) {
         self.frame_duration = Duration::from_millis(duration);
     }
 
+    /// Updates the animation.
     pub fn update(&mut self) {
         if let Some(data) = self.data.get(&self.animation_name) {
             let now = Instant::now();
@@ -143,6 +155,10 @@ impl Animator {
         }
     }
 
+    /// Draws the current animation frame.
+    /// 
+    /// Requires the draw context and the sprite atlas, plus the center position
+    /// of the sprite.
     pub fn draw(
         &self,
         context: &mut Context,
