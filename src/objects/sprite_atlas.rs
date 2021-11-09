@@ -10,10 +10,8 @@ use glam::*;
 /// and always equally spaced.
 #[derive(Debug, Clone, PartialEq)]
 pub struct SpriteAtlas {
-    /// The image that contains the frames.
-    pub texture: Image,
-    /// The size of each frame.
-    pub frame_size: Vec2,
+    texture: Image,
+    frame_size: Vec2,
     half_frame: Vec2,
 }
 
