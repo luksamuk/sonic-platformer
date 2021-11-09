@@ -6,6 +6,7 @@ use crate::objects::player::{self, *};
 use crate::screen_systems::Navigation;
 use ggez::{Context, GameResult};
 use legion::*;
+use crate::objects::sprite_atlas::SpriteAtlas;
 
 /// Defines the state for a level screen system.
 pub struct LevelScreenSystem {
@@ -213,14 +214,14 @@ impl LevelScreenSystem {
         self.draw_test_graphics(context)?;
 
         // Draw all animated sprites
-        let mut query = <(&AnimatorData, &Animator, &Position)>::query();
-        for (data, animator, position) in query.iter(&self.world) {
+        let mut query = <(&SpriteAtlas, &AnimatorData, &Animator, &Position)>::query();
+        for (atlas, data, animator, position) in query.iter(&self.world) {
             let hotspot = Position::wrap(if let Some(camera) = &self.camera {
                 camera.transform(position.0)
             } else {
                 position.0
             });
-            animator.draw(context, data, &hotspot)?;
+            animator.draw(context, atlas, data, &hotspot)?;
         }
 
         // Draw sensors and camera

@@ -25,6 +25,7 @@ impl Player {
     pub fn create(context: &mut Context, world: &mut World, knuckles: bool) -> GameResult<Entity> {
         use crate::objects::animation::*;
         use crate::objects::general::*;
+        use crate::objects::sprite_atlas::*;
 
         let constants = if knuckles {
             PlayerConstants::default_knuckles()
@@ -35,8 +36,8 @@ impl Player {
         let state = PlayerState::default();
         let position = Position::new(30.0, 240.0);
         let speed = PlayerSpeed::default();
-        let mut animation_data =
-            AnimatorData::new(context, "/sprites/sonic.png", Vec2::new(60.0, 60.0))?;
+        let atlas = SpriteAtlas::new(context, "/sprites/sonic.png", Vec2::new(60.0, 60.0))?;
+        let mut animation_data = AnimatorData::new();
         animation_data.with_data(&[
             (
                 "idle",
@@ -61,7 +62,7 @@ impl Player {
         let mut animator = Animator::default();
         animator.set("idle".to_string(), &animation_data);
 
-        Ok(world.push((state, constants, position, speed, animation_data, animator)))
+        Ok(world.push((state, constants, position, speed, atlas, animation_data, animator)))
     }
 
     /// Respawns all players in the world.
