@@ -168,7 +168,7 @@ impl Animator {
         if self.data.get(&self.animation_name).is_some() {
             let direction: f32 = self.direction.into();
             let xscale = direction * self.scale;
-            atlas.draw(
+            atlas.immediate_draw(
                 context,
                 self.current_frame,
                 hotspot.0,
