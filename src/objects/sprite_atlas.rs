@@ -1,5 +1,5 @@
-use ggez::graphics::{self, DrawParam, Image, Rect};
 use ggez::graphics::spritebatch::SpriteBatch;
+use ggez::graphics::{self, DrawParam, Image, Rect};
 use ggez::{Context, GameResult};
 use glam::*;
 
@@ -65,7 +65,6 @@ impl SpriteAtlas {
         Ok(())
     }
 
-
     /// Draws a frame of the sprite atlas, immediately.
     ///
     /// Requires a drawing context, the number of the frame, the center position
@@ -87,12 +86,15 @@ impl SpriteAtlas {
         graphics::draw(context, &self.texture, params)
     }
 
-    pub fn draw(
-        &mut self,
-        context: &mut Context,
-    ) -> GameResult {
-        graphics::draw(context, &self.batch, DrawParam::default())?;
+    /// Clears the frame queue. Should be called once
+    /// at the beginning of each frame.
+    pub fn clear(&mut self) {
         self.batch.clear();
-        Ok(())
+    }
+
+    /// Draw queued frames from the SpriteAtlas, with optimal
+    /// performace.
+    pub fn draw(&self, context: &mut Context) -> GameResult {
+        graphics::draw(context, &self.batch, DrawParam::default())
     }
 }
