@@ -118,6 +118,15 @@ impl LevelScreenSystem {
             }
         }
 
+        // Update level
+        if self.level.is_some() {
+            use glam::*;
+            let level = self.level.as_mut().unwrap();
+            level.clear();
+            level.update(Vec2::ZERO, Vec2::ZERO)?;
+        }
+
+
         if input.pressed(InputButton::Back) {
             self.first_update = true;
             *navigation = Navigation::TitleScreen;
@@ -227,7 +236,7 @@ impl LevelScreenSystem {
         // Draw level
         if self.level.is_some() {
             let level = self.level.as_ref().unwrap();
-            level.draw(context, Vec2::ZERO, Vec2::ZERO)?;
+            level.draw(context)?;
         }
 
         // Draw all animated sprites

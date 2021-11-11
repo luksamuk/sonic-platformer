@@ -11,10 +11,9 @@ pub struct Tile16 {
 }
 
 impl Tile16 {
-    pub fn draw(
+    pub fn put(
         &self,
-        context: &mut Context,
-        sheet: &SpriteAtlas,
+        sheet: &mut SpriteAtlas,
         hotspot: Vec2,
         camera_pos: Vec2,
     ) -> GameResult {
@@ -25,7 +24,7 @@ impl Tile16 {
                 let position =
                     glam::vec2((i % 2) as f32 * 8.0, (i as f32 / 2.0).floor() * 8.0) + hotspot;
                 let position = position - camera_pos;
-                sheet.draw(context, *tile, position, scale)?;
+                sheet.queue_draw(*tile, position, scale)?;
             }
             i += 1;
         }
@@ -39,11 +38,10 @@ pub struct Tile128 {
 }
 
 impl Tile128 {
-    pub fn draw(
+    pub fn put(
         &self,
-        context: &mut Context,
         tiles16: &Vec<Tile16>,
-        sheet: &SpriteAtlas,
+        sheet: &mut SpriteAtlas,
         hotspot: Vec2,
         camera_pos: Vec2,
     ) -> GameResult {
@@ -52,7 +50,7 @@ impl Tile128 {
             if *tile != 0 {
                 let position =
                     glam::vec2((i % 8) as f32 * 16.0, (i as f32 / 8.0).floor() * 16.0) + hotspot;
-                tiles16[*tile].draw(context, sheet, position, camera_pos)?;
+                tiles16[*tile].put(sheet, position, camera_pos)?;
             }
             i += 1;
         }
@@ -67,12 +65,11 @@ pub struct Map {
 }
 
 impl Map {
-    pub fn draw(
+    pub fn queue_draw(
         &self,
-        context: &mut Context,
         tiles128: &Vec<Tile128>,
         tiles16: &Vec<Tile16>,
-        sheet: &SpriteAtlas,
+        sheet: &mut SpriteAtlas,
         hotspot: Vec2,
         camera_pos: Vec2,
     ) -> GameResult {
@@ -83,7 +80,7 @@ impl Map {
                     (i as f32 % self.width as f32) * 128.0,
                     (i as f32 / self.width as f32).floor() * 128.0,
                 ) + hotspot;
-                tiles128[*chunk].draw(context, tiles16, sheet, hotspot, camera_pos)?;
+                tiles128[*chunk].put(tiles16, sheet, hotspot, camera_pos)?;
             }
             i += 1;
         }
@@ -136,14 +133,21 @@ impl Level {
         Ok(buffer)
     }
 
-    pub fn draw(&self, context: &mut Context, hotspot: Vec2, viewport_size: Vec2) -> GameResult {
-        self.map.draw(
-            context,
+    pub fn clear(&mut self) {
+        self.tilesheet.clear();
+    }
+
+    pub fn update(&mut self, hotspot: Vec2, viewport_size: Vec2) -> GameResult {
+        self.map.queue_draw(
             &self.tiles128,
             &self.tiles16,
-            &self.tilesheet,
+            &mut self.tilesheet,
             Vec2::ZERO,
             hotspot + glam::vec2(-8.0, -8.0),
         )
+    }
+
+    pub fn draw(&self, context: &mut Context) -> GameResult {
+        self.tilesheet.draw(context)
     }
 }
