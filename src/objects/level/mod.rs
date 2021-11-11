@@ -80,7 +80,7 @@ impl Map {
                     (i as f32 % self.width as f32) * 128.0,
                     (i as f32 / self.width as f32).floor() * 128.0,
                 ) + hotspot;
-                tiles128[*chunk].put(tiles16, sheet, hotspot, camera_pos)?;
+                tiles128[*chunk].put(tiles16, sheet, position, camera_pos)?;
             }
             i += 1;
         }
@@ -105,16 +105,12 @@ impl Level {
 
         let tilesheet = SpriteAtlas::new(context, &sprites_path, glam::vec2(8.0, 8.0))?;
 
-        println!("Loading 16x16");
         let tiles16 = serde_json::from_str(&Level::slurp_file(context, &tiles16_path)?)
             .map_err(|e| GameError::ConfigError(e.to_string()))?;
-        println!("Loading 128x128");
         let tiles128 = serde_json::from_str(&Level::slurp_file(context, &tiles128_path)?)
             .map_err(|e| GameError::ConfigError(e.to_string()))?;
-        println!("Loading level map");
         let map = serde_json::from_str(&Level::slurp_file(context, &map_path)?)
             .map_err(|e| GameError::ConfigError(e.to_string()))?;
-        println!("All ok");
 
         Ok(Self {
             tilesheet,
