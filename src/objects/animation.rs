@@ -163,7 +163,8 @@ impl Animator {
             atlas.queue_draw(
                 self.current_frame,
                 hotspot.0,
-                glam::vec2(xscale, self.scale))
+                glam::vec2(xscale, self.scale),
+            )
         } else {
             Ok(())
         }
