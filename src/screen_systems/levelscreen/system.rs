@@ -50,9 +50,15 @@ impl LevelScreenSystem {
         player::physics::update(&mut self.world, input)?;
 
         // Update all animated sprites
-        let mut query = <&mut Animator>::query();
-        for animator in query.iter_mut(&mut self.world) {
-            animator.update();
+        let mut query = <(&mut Animator, &mut SpriteAtlas, &Position)>::query();
+        for (animator, atlas, position) in query.iter_mut(&mut self.world) {
+            let hotspot = Position::wrap(if let Some(camera) = &self.camera {
+                camera.transform(position.0)
+            } else {
+                position.0
+            });
+            atlas.clear();
+            animator.update(atlas, &hotspot)?;
         }
 
         // Update camera panning
@@ -214,14 +220,9 @@ impl LevelScreenSystem {
         self.draw_test_graphics(context)?;
 
         // Draw all animated sprites
-        let mut query = <(&SpriteAtlas, &Animator, &Position)>::query();
-        for (atlas, animator, position) in query.iter(&self.world) {
-            let hotspot = Position::wrap(if let Some(camera) = &self.camera {
-                camera.transform(position.0)
-            } else {
-                position.0
-            });
-            animator.draw(context, atlas, &hotspot)?;
+        let mut query = <&SpriteAtlas>::query();
+        for atlas in query.iter(&self.world) {
+            atlas.draw(context)?;
         }
 
         // Draw sensors and camera

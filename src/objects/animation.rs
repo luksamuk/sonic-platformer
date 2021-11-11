@@ -66,6 +66,10 @@ impl AnimatorBuilder {
 
 /// An animator structure, responsible for managing and
 /// storing information related to animations.
+/// Animators are responsible for handling logic, and
+/// queueing SpriteAtlas for drawing frames in specific
+/// locations. To perform actual rendering, draw the
+/// sprite atlas in non-immediate mode.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Animator {
     animation_name: String,
@@ -123,7 +127,7 @@ impl Animator {
     }
 
     /// Updates the animation.
-    pub fn update(&mut self) {
+    pub fn update(&mut self, atlas: &mut SpriteAtlas, hotspot: &Position) -> GameResult {
         if let Some(data) = self.data.get(&self.animation_name) {
             let now = Instant::now();
             let delta = (now - self.last_update) as Duration;
@@ -152,29 +156,16 @@ impl Animator {
             }
             // Fetch animation frame number
             self.current_frame = *data.frames.get(self.frame_count).unwrap_or(&0);
-        }
-    }
 
-    /// Draws the current animation frame.
-    ///
-    /// Requires the draw context and the sprite atlas, plus the center position
-    /// of the sprite.
-    pub fn draw(
-        &self,
-        context: &mut Context,
-        atlas: &SpriteAtlas,
-        hotspot: &Position,
-    ) -> GameResult {
-        if self.data.get(&self.animation_name).is_some() {
+            // Queue drawing
             let direction: f32 = self.direction.into();
             let xscale = direction * self.scale;
-            atlas.immediate_draw(
-                context,
+            atlas.queue_draw(
                 self.current_frame,
                 hotspot.0,
-                glam::vec2(xscale, self.scale),
-            )?;
+                glam::vec2(xscale, self.scale))
+        } else {
+            Ok(())
         }
-        Ok(())
     }
 }
