@@ -7,6 +7,7 @@ use crate::objects::sprite_atlas::SpriteAtlas;
 use crate::screen_systems::Navigation;
 use ggez::{Context, GameResult};
 use legion::*;
+use crate::objects::level::*;
 
 /// Defines the state for a level screen system.
 pub struct LevelScreenSystem {
@@ -15,6 +16,7 @@ pub struct LevelScreenSystem {
     debug: bool,
     camera: Option<Camera>,
     camera_timer: i32,
+    level: Option<Level>,
 }
 
 impl LevelScreenSystem {
@@ -29,12 +31,14 @@ impl LevelScreenSystem {
             debug,
             camera: None,
             camera_timer: 0,
+            level: None,
         }
     }
 
     /// Sets up the initial state of the level screen system.
     pub fn setup(&mut self, context: &mut Context) -> GameResult {
         self.camera = Some(Camera::new(context));
+        self.level = Some(Level::load(context, "/levels/00")?);
         Player::create(context, &mut self.world, false)?;
         Ok(())
     }
@@ -216,8 +220,15 @@ impl LevelScreenSystem {
 
     /// Draws the level screen.
     pub fn draw(&self, context: &mut Context) -> GameResult {
+        use glam::*;
         // Draw test graphics
         self.draw_test_graphics(context)?;
+
+        // Draw level
+        if self.level.is_some() {
+            let level = self.level.as_ref().unwrap();
+            level.draw(context, Vec2::ZERO, Vec2::ZERO)?;
+        }
 
         // Draw all animated sprites
         let mut query = <&SpriteAtlas>::query();
