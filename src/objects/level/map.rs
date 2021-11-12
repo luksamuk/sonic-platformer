@@ -15,16 +15,15 @@ pub struct Map {
 impl Map {
     pub fn queue_draw(
         &self,
-        tiles128: &Vec<Tile128>,
-        tiles16: &Vec<Tile16>,
+        tiles128: &[Tile128],
+        tiles16: &[Tile16],
         sheet: &mut SpriteAtlas,
         hotspot: Vec2,
         camera_pos: Vec2,
         viewport_size: Vec2,
     ) -> GameResult {
         let viewport = Rect::new(camera_pos.x, camera_pos.y, viewport_size.x, viewport_size.y);
-        let mut i = 0;
-        for chunk in &self.map {
+        for (i, chunk) in self.map.iter().enumerate() {
             if *chunk != 0 {
                 let position = glam::vec2(
                     (i as f32 % self.width as f32) * 128.0,
@@ -37,7 +36,6 @@ impl Map {
                     tiles128[*chunk].put(tiles16, sheet, position, camera_pos)?;
                 }
             }
-            i += 1;
         }
         Ok(())
     }
