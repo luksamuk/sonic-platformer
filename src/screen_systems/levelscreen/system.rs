@@ -156,13 +156,13 @@ impl LevelScreenSystem {
         use crate::objects::player::physics::FAKE_GROUND_Y;
         use ggez::graphics::{self, Color, MeshBuilder};
         use glam::*;
-        let mut builder = MeshBuilder::new();
+        let mut bg_builder = MeshBuilder::new();
 
         // Crosses on background
         for i in 0..30 {
             for j in 0..30 {
                 let center = glam::vec2(100.0 * i as f32, 100.0 * j as f32);
-                let _ = builder
+                let _ = bg_builder
                     .line(
                         &[
                             glam::vec2(center.x, center.y - 10.0),
@@ -183,7 +183,8 @@ impl LevelScreenSystem {
         }
 
         // Representation for floor
-        let _ = builder.line(
+        let mut floor_builder = MeshBuilder::new();
+        let _ = floor_builder.line(
             &[
                 glam::vec2(0.0, FAKE_GROUND_Y + 16.0 + 5.0),
                 glam::vec2(3000.0, FAKE_GROUND_Y + 16.0 + 5.0),
@@ -192,13 +193,19 @@ impl LevelScreenSystem {
             Color::new(0.3, 0.0, 0.2, 0.5),
         )?;
 
-        let mesh = builder.build(context)?;
+        let bg_mesh = bg_builder.build(context)?;
+        let floor_mesh = floor_builder.build(context)?;
         let position = if let Some(camera) = &self.camera {
             camera.transform(Vec2::ZERO)
         } else {
             Vec2::ZERO
         };
-        graphics::draw(context, &mesh, (position, 0.0, Color::WHITE))?;
+
+        // Parallax effect
+        let bg_position = position * 0.65;
+
+        graphics::draw(context, &bg_mesh, (bg_position, 0.0, Color::WHITE))?;
+        graphics::draw(context, &floor_mesh, (position, 0.0, Color::WHITE))?;
         Ok(())
     }
 
@@ -249,14 +256,14 @@ impl LevelScreenSystem {
 
     /// Draws the level screen.
     pub fn draw(&self, context: &mut Context) -> GameResult {
+        // Draw test graphics
+        self.draw_test_graphics(context)?;
+
         // Draw level
         if self.level.is_some() {
             let level = self.level.as_ref().unwrap();
             level.draw(context)?;
         }
-
-        // Draw test graphics
-        self.draw_test_graphics(context)?;
 
         // Draw all animated sprites
         let mut query = <&SpriteAtlas>::query();
