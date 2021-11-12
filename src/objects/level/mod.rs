@@ -1,4 +1,5 @@
 use crate::objects::sprite_atlas::SpriteAtlas;
+use ggez::graphics::Rect;
 use ggez::{Context, GameResult};
 use glam::*;
 use serde_derive::Deserialize;
@@ -11,12 +12,7 @@ pub struct Tile16 {
 }
 
 impl Tile16 {
-    pub fn put(
-        &self,
-        sheet: &mut SpriteAtlas,
-        hotspot: Vec2,
-        camera_pos: Vec2,
-    ) -> GameResult {
+    pub fn put(&self, sheet: &mut SpriteAtlas, hotspot: Vec2, camera_pos: Vec2) -> GameResult {
         let scale = glam::vec2(1.0, 1.0);
         let mut i = 0;
         for tile in &self.tiles {
@@ -72,7 +68,9 @@ impl Map {
         sheet: &mut SpriteAtlas,
         hotspot: Vec2,
         camera_pos: Vec2,
+        viewport_size: Vec2,
     ) -> GameResult {
+        let viewport = Rect::new(camera_pos.x, camera_pos.y, viewport_size.x, viewport_size.y);
         let mut i = 0;
         for chunk in &self.map {
             if *chunk != 0 {
@@ -80,7 +78,12 @@ impl Map {
                     (i as f32 % self.width as f32) * 128.0,
                     (i as f32 / self.width as f32).floor() * 128.0,
                 ) + hotspot;
-                tiles128[*chunk].put(tiles16, sheet, position, camera_pos)?;
+
+                let chunk_rect = Rect::new(position.x, position.y, 128.0, 128.0);
+
+                if chunk_rect.overlaps(&viewport) {
+                    tiles128[*chunk].put(tiles16, sheet, position, camera_pos)?;
+                }
             }
             i += 1;
         }
@@ -121,8 +124,7 @@ impl Level {
     }
 
     fn slurp_file(context: &Context, path: &str) -> GameResult<String> {
-        println!("Slurping {}", path);
-        use ggez::filesystem::{self, File};
+        use ggez::filesystem;
         use std::io::Read;
         let mut buffer = String::new();
         filesystem::open(context, path)?.read_to_string(&mut buffer)?;
@@ -140,6 +142,7 @@ impl Level {
             &mut self.tilesheet,
             Vec2::ZERO,
             hotspot + glam::vec2(-8.0, -8.0),
+            viewport_size,
         )
     }
 

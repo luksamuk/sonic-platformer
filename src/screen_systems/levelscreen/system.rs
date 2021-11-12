@@ -2,12 +2,13 @@ use crate::input::{Input, InputButton};
 use crate::objects::animation::*;
 use crate::objects::camera::Camera;
 use crate::objects::general::*;
+use crate::objects::level::*;
 use crate::objects::player::{self, *};
 use crate::objects::sprite_atlas::SpriteAtlas;
 use crate::screen_systems::Navigation;
 use ggez::{Context, GameResult};
+use glam::*;
 use legion::*;
-use crate::objects::level::*;
 
 /// Defines the state for a level screen system.
 pub struct LevelScreenSystem {
@@ -17,6 +18,7 @@ pub struct LevelScreenSystem {
     camera: Option<Camera>,
     camera_timer: i32,
     level: Option<Level>,
+    viewport_size: Vec2,
 }
 
 impl LevelScreenSystem {
@@ -32,13 +34,18 @@ impl LevelScreenSystem {
             camera: None,
             camera_timer: 0,
             level: None,
+            viewport_size: Vec2::ZERO,
         }
     }
 
     /// Sets up the initial state of the level screen system.
     pub fn setup(&mut self, context: &mut Context) -> GameResult {
         self.camera = Some(Camera::new(context));
-        self.level = Some(Level::load(context, "/levels/00")?);
+        self.level = Some(Level::load(context, "/levels/R0")?);
+        self.viewport_size = {
+            let rect = ggez::graphics::screen_coordinates(context);
+            glam::vec2(rect.w, rect.h)
+        };
         Player::create(context, &mut self.world, false)?;
         Ok(())
     }
@@ -122,10 +129,14 @@ impl LevelScreenSystem {
         if self.level.is_some() {
             use glam::*;
             let level = self.level.as_mut().unwrap();
+            let camera_pos = if let Some(camera) = &self.camera {
+                camera.transform(Vec2::ZERO)
+            } else {
+                Vec2::ZERO
+            };
             level.clear();
-            level.update(Vec2::ZERO, Vec2::ZERO)?;
+            level.update(-camera_pos, self.viewport_size)?;
         }
-
 
         if input.pressed(InputButton::Back) {
             self.first_update = true;
@@ -200,14 +211,22 @@ impl LevelScreenSystem {
         use ggez::graphics::{self, Color, PxScale, Text, TextFragment};
 
         let mut hud_text = format!(
-            "ACTION {:?}\n\
+            "FPS    {:>5.2}\n\
+             ACTION {:?}\n\
              POSX   {:>13.6}\n\
              POSY   {:>13.6}\n\
              GSP    {:>13.6}\n\
              XSP    {:>13.6}\n\
              YSP    {:>13.6}\n\
              THETA  {:>13.6}",
-            state.action, pos.0.x, pos.0.y, speed.gsp, speed.xsp, speed.ysp, speed.angle,
+            ggez::timer::fps(context),
+            state.action,
+            pos.0.x,
+            pos.0.y,
+            speed.gsp,
+            speed.xsp,
+            speed.ysp,
+            speed.angle,
         );
 
         if let Some(camera) = &self.camera {
@@ -229,15 +248,14 @@ impl LevelScreenSystem {
 
     /// Draws the level screen.
     pub fn draw(&self, context: &mut Context) -> GameResult {
-        use glam::*;
-        // Draw test graphics
-        self.draw_test_graphics(context)?;
-
         // Draw level
         if self.level.is_some() {
             let level = self.level.as_ref().unwrap();
             level.draw(context)?;
         }
+
+        // Draw test graphics
+        self.draw_test_graphics(context)?;
 
         // Draw all animated sprites
         let mut query = <&SpriteAtlas>::query();
