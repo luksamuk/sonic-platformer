@@ -52,7 +52,7 @@ impl Level {
             &self.tiles16,
             &mut self.tilesheet,
             Vec2::ZERO,
-            hotspot + glam::vec2(-8.0, -8.0),
+            hotspot,
             viewport_size,
         )
     }
