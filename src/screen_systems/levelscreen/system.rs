@@ -56,9 +56,6 @@ impl LevelScreenSystem {
             self.first_update = false;
             Player::respawn_all(&mut self.world);
         }
-        // Update players
-        player::animation::update(&mut self.world)?;
-        player::physics::update(&mut self.world, input)?;
 
         // Update all animated sprites
         let mut query = <(&mut Animator, &mut SpriteAtlas, &Position)>::query();
@@ -71,6 +68,10 @@ impl LevelScreenSystem {
             atlas.clear();
             animator.update(atlas, &hotspot)?;
         }
+
+        // Update players
+        player::animation::update(&mut self.world)?;
+        player::physics::update(&mut self.world, input)?;
 
         // Update camera panning
         self.camera_timer = {
