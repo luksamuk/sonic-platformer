@@ -1,6 +1,7 @@
-mod input;
-mod objects;
-mod screen_systems;
+pub mod input;
+pub mod objects;
+pub mod resources;
+pub mod screen_systems;
 
 use ggez::event::EventHandler;
 use ggez::event::{KeyCode, KeyMods};

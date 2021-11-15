@@ -56,6 +56,30 @@
 			],
 			"group": "build",
 			"label": "Rust: cargo run - sonic-platformer"
+		},
+		{
+			"type": "shell",
+			"command": "cargo",
+			"args": [
+				"run",
+				"--bin",
+				"lvledit",
+				"--",
+				"${input:lvlname}"
+			],
+			"problemMatcher": [
+				"$rustc"
+			],
+			"group": "build",
+			"label": "Rust: cargo run - lvledit"
+		}
+	],
+	"inputs": [
+		{
+			"id": "lvlname",
+			"description": "Level name",
+			"default": "R0",
+			"type": "promptString"
 		}
 	]
 }
