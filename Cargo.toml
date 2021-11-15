@@ -1,7 +1,18 @@
 [package]
 name = "sonic-platformer"
+authors = ["Lucas Vieira <lucasvieira@protonmail.com>"]
 version = "0.0.4"
 edition = "2018"
+default-run = "game"
+autobins = false
+
+[lib]
+name = "sonic_platformer"
+path = "src/lib.rs"
+
+[[bin]]
+name = "game"
+path = "src/main.rs"
 
 [dependencies]
 ggez = "0.6.1"
