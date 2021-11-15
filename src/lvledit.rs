@@ -1,7 +1,4 @@
-use ggez::event::EventHandler;
 use ggez::graphics::{self, Color};
-use ggez::Context;
-use ggez::GameError;
 use ggez::{
     conf::{FullscreenType, WindowMode, WindowSetup},
     event, ContextBuilder, GameResult,
@@ -9,20 +6,11 @@ use ggez::{
 use sonic_platformer::*;
 use std::env;
 
+mod level_editor;
+
+use level_editor::*;
+
 const GAME_NAME: &str = "Level Editor";
-
-pub struct EditorState;
-
-impl EventHandler<GameError> for EditorState {
-    fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
-        Ok(())
-    }
-
-    fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
-        graphics::clear(ctx, Color::BLACK);
-        graphics::present(ctx)
-    }
-}
 
 fn main() -> GameResult {
     let window_setup = WindowSetup::default().title(GAME_NAME).vsync(true);

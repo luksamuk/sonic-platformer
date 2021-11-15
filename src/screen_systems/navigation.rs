@@ -13,3 +13,18 @@ impl Default for Navigation {
         Self::TitleScreen
     }
 }
+
+/// Enumeration to determine the current
+/// editor scrren being drawn and updated.
+pub enum EditorNavigation {
+    TileViewer,
+    PieceViewer,
+    ChunkViewer,
+    LevelViewer,
+}
+
+impl Default for EditorNavigation {
+    fn default() -> Self {
+        Self::TileViewer
+    }
+}
