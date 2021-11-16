@@ -14,7 +14,7 @@ fn main() -> GameResult {
 
     let window_mode = WindowMode::default()
         //.fullscreen_type(FullscreenType::Desktop)
-        .dimensions(854.0, 480.0)
+        .dimensions(960.0, 540.0)
         .resizable(false);
 
     let (mut ctx, event_loop) = ContextBuilder::new("sonic_platformer", "Lucas S. Vieira")
