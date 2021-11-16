@@ -6,9 +6,9 @@ use crate::objects::sprite_atlas::SpriteAtlas;
 use ggez::{Context, GameResult};
 use glam::*;
 
-use map::Map;
-use tile128::Tile128;
-use tile16::Tile16;
+pub use map::Map;
+pub use tile128::Tile128;
+pub use tile16::Tile16;
 
 pub struct Level {
     tilesheet: SpriteAtlas,
@@ -62,7 +62,7 @@ impl Level {
     }
 }
 
-fn slurp_file(context: &Context, path: &str) -> GameResult<String> {
+pub fn slurp_file(context: &Context, path: &str) -> GameResult<String> {
     use ggez::filesystem;
     use std::io::Read;
     let mut buffer = String::new();

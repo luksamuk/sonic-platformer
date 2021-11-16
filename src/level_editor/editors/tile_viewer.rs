@@ -24,7 +24,7 @@ impl TileViewer {
 
     pub fn update(&mut self, context: &mut Context) -> GameResult {
         if self.tiles.is_some() {
-            let max_columns = 5;
+            let max_columns = 8;
             let tiles_per_column = 14;
 
             let atlas = self.tiles.as_mut().unwrap();

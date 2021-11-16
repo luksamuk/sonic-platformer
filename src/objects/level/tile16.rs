@@ -11,6 +11,8 @@ pub struct Tile16 {
 }
 
 impl Tile16 {
+    /// Queues the tile16 for rendering at the given position.
+    /// The position is automatically adjusted relative to the camera.
     pub fn put(&self, sheet: &mut SpriteAtlas, hotspot: Vec2, camera_pos: Vec2) -> GameResult {
         let scale = glam::vec2(1.0, 1.0);
         for (i, tile) in self.tiles.iter().enumerate() {
