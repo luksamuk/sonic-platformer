@@ -72,6 +72,25 @@
 			],
 			"group": "build",
 			"label": "Rust: cargo run - lvledit"
+		},
+		{
+			"type": "shell",
+			"command": "cargo",
+			"args": [
+				"run",
+				"-p",
+				"mapgen",
+				"--",
+				"${input:smallmap}",
+				"${input:smalltilesize}",
+				"${input:bigmap}",
+				"${input:bigtilesize}"
+			],
+			"problemMatcher": [
+				"$rustc"
+			],
+			"group": "build",
+			"label": "Rust: cargo run - mapgen"
 		}
 	],
 	"inputs": [
@@ -79,6 +98,30 @@
 			"id": "lvlname",
 			"description": "Level name",
 			"default": "R0",
+			"type": "promptString"
+		},
+		{
+			"id": "smallmap",
+			"description": "Smaller tilesheet",
+			"default": "resources/levels/R1/tiles.png",
+			"type": "promptString"
+		},
+		{
+			"id": "bigmap",
+			"description": "Bigger tilesheet",
+			"default": "resources/levels/R1/dev/16x16.png",
+			"type": "promptString"
+		},
+		{
+			"id": "smalltilesize",
+			"description": "Size of smaller tile",
+			"default": "8",
+			"type": "promptString"
+		},
+		{
+			"id": "bigtilesize",
+			"description": "Size of bigger tile",
+			"default": "16",
 			"type": "promptString"
 		}
 	]
