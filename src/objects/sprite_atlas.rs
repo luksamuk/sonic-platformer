@@ -1,5 +1,5 @@
 use ggez::graphics::spritebatch::SpriteBatch;
-use ggez::graphics::{self, DrawParam, Image, Rect, FilterMode};
+use ggez::graphics::{self, DrawParam, FilterMode, Image, Rect};
 use ggez::{Context, GameResult};
 use glam::*;
 

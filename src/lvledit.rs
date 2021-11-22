@@ -1,7 +1,6 @@
 use ggez::{
     conf::{FullscreenType, WindowMode, WindowSetup},
-    event, ContextBuilder, GameResult,
-    GameError,
+    event, ContextBuilder, GameError, GameResult,
 };
 use sonic_platformer::*;
 use std::env;
@@ -15,7 +14,9 @@ const GAME_NAME: &str = "Level Editor";
 fn main() -> GameResult {
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 {
-        return Err(GameError::CustomError("Cannot grab level name!".to_string()));
+        return Err(GameError::CustomError(
+            "Cannot grab level name!".to_string(),
+        ));
     }
 
     let level_name = &args[1];

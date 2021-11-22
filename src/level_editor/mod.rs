@@ -4,10 +4,11 @@ use ggez::graphics::FilterMode;
 use ggez::graphics::PxScale;
 use ggez::graphics::Text;
 use ggez::graphics::TextFragment;
+use ggez::input::keyboard::{KeyCode, KeyMods};
+use ggez::timer;
 use ggez::Context;
 use ggez::GameError;
 use ggez::GameResult;
-use ggez::input::keyboard::{KeyMods, KeyCode};
 use ggez::{
     self,
     graphics::{self, Color},
@@ -20,6 +21,8 @@ mod navigation;
 
 use editors::*;
 use navigation::EditorNavigation;
+
+const DESIRED_FPS: u32 = 60;
 
 pub struct EditorState {
     level_name: String,
@@ -49,19 +52,29 @@ impl EditorState {
 
 impl EventHandler<GameError> for EditorState {
     fn update(&mut self, ctx: &mut Context) -> GameResult {
-        if self.input.pressed(InputButton::DbgNext) && (self.navigation == EditorNavigation::TileViewer) {
-            self.navigation = EditorNavigation::PieceEditor;
-            self.pieceeditor.reload(ctx)?;
-        } else if self.input.pressed(InputButton::DbgPrev) && (self.navigation == EditorNavigation::PieceEditor) {
-            self.navigation = EditorNavigation::TileViewer;
-            self.tileviewer.reload(ctx)?;
-        }
+        while timer::check_update_time(ctx, DESIRED_FPS) {
+            if self.input.pressed(InputButton::DbgNext)
+                && (self.navigation == EditorNavigation::TileViewer)
+            {
+                self.navigation = EditorNavigation::PieceEditor;
+                self.pieceeditor.reload(ctx)?;
+            } else if self.input.pressed(InputButton::DbgPrev)
+                && (self.navigation == EditorNavigation::PieceEditor)
+            {
+                self.navigation = EditorNavigation::TileViewer;
+                self.tileviewer.reload(ctx)?;
+            }
 
-        match self.navigation {
-            EditorNavigation::TileViewer => self.tileviewer.update(ctx),
-            EditorNavigation::PieceEditor => self.pieceeditor.update(ctx),
-            _ => Ok(()),
+            let ret = match self.navigation {
+                EditorNavigation::TileViewer => self.tileviewer.update(ctx),
+                EditorNavigation::PieceEditor => self.pieceeditor.update(ctx, &self.input),
+                _ => Ok(()),
+            };
+
+            self.input.post_update();
+            return ret;
         }
+        Ok(())
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult {
@@ -70,7 +83,7 @@ impl EventHandler<GameError> for EditorState {
         match self.navigation {
             EditorNavigation::TileViewer => self.tileviewer.draw(ctx)?,
             EditorNavigation::PieceEditor => self.pieceeditor.draw(ctx)?,
-            _ => {},
+            _ => {}
         }
 
         let header_letter_size = 20.0;
