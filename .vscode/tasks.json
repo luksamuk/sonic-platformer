@@ -82,9 +82,8 @@
 				"mapgen",
 				"--",
 				"${input:smallmap}",
-				"${input:smalltilesize}",
 				"${input:bigmap}",
-				"${input:bigtilesize}"
+				"${input:tilemode}"
 			],
 			"problemMatcher": [
 				"$rustc"
@@ -113,16 +112,10 @@
 			"type": "promptString"
 		},
 		{
-			"id": "smalltilesize",
-			"description": "Size of smaller tile",
-			"default": "8",
+			"id": "tilemode",
+			"description": "Tile generation mode (8_16 or 16_128)",
+			"default": "8_16",
 			"type": "promptString"
 		},
-		{
-			"id": "bigtilesize",
-			"description": "Size of bigger tile",
-			"default": "16",
-			"type": "promptString"
-		}
 	]
 }
