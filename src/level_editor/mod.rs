@@ -35,7 +35,7 @@ impl EditorState {
             level_name: String::from(level_name),
             navigation: EditorNavigation::default(),
             tileviewer: TileViewer::new(&format!("/levels/{}/tiles.png", level_name)),
-            pieceeditor: PieceEditor::new(&format!("/levels/{}/16x16.json", level_name)),
+            pieceeditor: PieceEditor::new(level_name),
             input: Input::default(),
         }
     }
@@ -49,11 +49,12 @@ impl EditorState {
 
 impl EventHandler<GameError> for EditorState {
     fn update(&mut self, ctx: &mut Context) -> GameResult {
-
         if self.input.pressed(InputButton::DbgNext) && (self.navigation == EditorNavigation::TileViewer) {
-            self.navigation = EditorNavigation::PieceEditor;            
+            self.navigation = EditorNavigation::PieceEditor;
+            self.pieceeditor.reload(ctx)?;
         } else if self.input.pressed(InputButton::DbgPrev) && (self.navigation == EditorNavigation::PieceEditor) {
             self.navigation = EditorNavigation::TileViewer;
+            self.tileviewer.reload(ctx)?;
         }
 
         match self.navigation {
