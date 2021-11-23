@@ -16,12 +16,15 @@ impl Tile128 {
         sheet: &mut SpriteAtlas,
         hotspot: Vec2,
         camera_pos: Vec2,
+        scale: f32,
     ) -> GameResult {
         for (i, tile) in self.tiles.iter().enumerate() {
             if *tile != 0 {
-                let position =
-                    glam::vec2((i % 8) as f32 * 16.0, (i as f32 / 8.0).floor() * 16.0) + hotspot;
-                tiles16[*tile].put(sheet, position, camera_pos)?;
+                let position = glam::vec2(
+                    (i % 8) as f32 * 16.0 * scale,
+                    (i as f32 / 8.0).floor() * 16.0 * scale,
+                ) + hotspot;
+                tiles16[*tile].put(sheet, position, camera_pos, scale)?;
             }
         }
         Ok(())

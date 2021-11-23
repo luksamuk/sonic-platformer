@@ -1,4 +1,5 @@
-use ggez::graphics::{self};
+use ggez::graphics::TextFragment;
+use ggez::graphics::{self, Color, PxScale, Text};
 use ggez::Context;
 use ggez::GameError;
 use ggez::GameResult;
@@ -45,9 +46,9 @@ impl PieceEditor {
 
     /// Updates the piece editor.
     pub fn update(&mut self, context: &mut Context, input: &Input) -> GameResult {
-        if input.pressed(InputButton::Left) {
+        if input.pressed(InputButton::Right) {
             self.current_tile = (self.current_tile + 1) % self.data.len();
-        } else if input.pressed(InputButton::Right) {
+        } else if input.pressed(InputButton::Left) {
             self.current_tile = (self.current_tile + self.data.len() - 1) % self.data.len();
         }
 
@@ -59,8 +60,20 @@ impl PieceEditor {
 
             let tiles = self.tiles.as_mut().unwrap();
             tiles.clear();
-            tile.put(tiles, Vec2::ZERO, -screen_center)?;
+            tile.put(tiles, Vec2::ZERO, -screen_center, 5.0)?;
         }
+
+        let text = TextFragment::new(format!(
+            "Tile: {:03}/{:03}",
+            self.current_tile,
+            self.data.len() - 1
+        ))
+        .color(Color::WHITE)
+        .scale(PxScale::from(24.0));
+        let text = Text::new(text);
+
+        graphics::queue_text(context, &text, glam::vec2(20.0, 80.0), None);
+
         Ok(())
     }
 

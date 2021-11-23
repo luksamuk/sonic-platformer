@@ -33,7 +33,7 @@ impl Map {
                 let chunk_rect = Rect::new(position.x, position.y, 128.0, 128.0);
 
                 if chunk_rect.overlaps(&viewport) {
-                    tiles128[*chunk].put(tiles16, sheet, position, camera_pos)?;
+                    tiles128[*chunk].put(tiles16, sheet, position, camera_pos, 1.0)?;
                 }
             }
         }

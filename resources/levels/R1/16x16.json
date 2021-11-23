@@ -1,2 +1,72 @@
 [
+    {
+        "tiles": [0, 0, 0, 0],
+        "heightmask": 0,
+        "angle": 0.0
+    },
+    {
+        "tiles": [1, 2, 1, 3],
+        "heightmask": 0,
+        "angle": 0.0
+    },
+    {
+        "tiles": [717, 4, 716, 5],
+        "heightmask": 0,
+        "angle": 0.0
+    },
+    {
+        "tiles": [715, 6, 7, 8],
+        "heightmask": 0,
+        "angle": 0.0
+    },
+    {
+        "tiles": [9, 710, 10, 11],
+        "heightmask": 0,
+        "angle": 0.0
+    },
+    {
+        "tiles": [12, 13, 14, 705],
+        "heightmask": 0,
+        "angle": 0.0
+    },
+    {
+        "tiles": [15, 2705, 16, 2707],
+        "heightmask": 0,
+        "angle": 0.0
+    },
+    {
+        "tiles": [17, 2710, 2017, 710],
+        "heightmask": 0,
+        "angle": 0.0
+    },
+    {
+        "tiles": [2711, 4, 2713, 712],
+        "heightmask": 0,
+        "angle": 0.0
+    },
+    {
+        "tiles": [715, 18, 714, 19],
+        "heightmask": 0,
+        "angle": 0.0
+    },
+    {
+        "tiles": [717, 20, 716, 21],
+        "heightmask": 0,
+        "angle": 0.0
+    },
+    {
+        "tiles": [701, 22, 701, 18],
+        "heightmask": 0,
+        "angle": 0.0
+    },
+    {
+        "tiles": [706, 23, 14, 24],
+        "heightmask": 0,
+        "angle": 0.0
+    },
+    {
+        "tiles": [23, 707, 24, 705],
+        "heightmask": 0,
+        "angle": 0.0
+    }
 ]
