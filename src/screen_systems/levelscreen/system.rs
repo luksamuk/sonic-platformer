@@ -21,6 +21,12 @@ pub struct LevelScreenSystem {
     viewport_size: Vec2,
 }
 
+impl Default for LevelScreenSystem {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl LevelScreenSystem {
     /// Creates a new level screen system.
     pub fn new() -> Self {

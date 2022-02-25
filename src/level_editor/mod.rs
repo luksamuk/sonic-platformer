@@ -52,29 +52,28 @@ impl EditorState {
 
 impl EventHandler<GameError> for EditorState {
     fn update(&mut self, ctx: &mut Context) -> GameResult {
-        while timer::check_update_time(ctx, DESIRED_FPS) {
-            if self.input.pressed(InputButton::DbgNext)
-                && (self.navigation == EditorNavigation::TileViewer)
-            {
-                self.navigation = EditorNavigation::PieceEditor;
-                self.pieceeditor.reload(ctx)?;
-            } else if self.input.pressed(InputButton::DbgPrev)
-                && (self.navigation == EditorNavigation::PieceEditor)
-            {
-                self.navigation = EditorNavigation::TileViewer;
-                self.tileviewer.reload(ctx)?;
-            }
+        while !timer::check_update_time(ctx, DESIRED_FPS) {} // Spinlock
 
-            let ret = match self.navigation {
-                EditorNavigation::TileViewer => self.tileviewer.update(ctx),
-                EditorNavigation::PieceEditor => self.pieceeditor.update(ctx, &self.input),
-                _ => Ok(()),
-            };
-
-            self.input.post_update();
-            return ret;
+        if self.input.pressed(InputButton::DbgNext)
+            && (self.navigation == EditorNavigation::TileViewer)
+        {
+            self.navigation = EditorNavigation::PieceEditor;
+            self.pieceeditor.reload(ctx)?;
+        } else if self.input.pressed(InputButton::DbgPrev)
+            && (self.navigation == EditorNavigation::PieceEditor)
+        {
+            self.navigation = EditorNavigation::TileViewer;
+            self.tileviewer.reload(ctx)?;
         }
-        Ok(())
+
+        let ret = match self.navigation {
+            EditorNavigation::TileViewer => self.tileviewer.update(ctx),
+            EditorNavigation::PieceEditor => self.pieceeditor.update(ctx, &self.input),
+            _ => Ok(()),
+        };
+
+        self.input.post_update();
+        ret
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult {

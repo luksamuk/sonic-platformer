@@ -24,6 +24,12 @@ pub struct AnimatorBuilder {
     pub data: HashMap<String, AnimationData>,
 }
 
+impl Default for AnimatorBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl AnimatorBuilder {
     /// Creates a new animator builder.
     pub fn new() -> Self {
