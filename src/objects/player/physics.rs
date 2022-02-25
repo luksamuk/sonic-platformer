@@ -58,10 +58,10 @@ pub fn update(world: &mut World, input: &Input) -> GameResult {
                     speed.gsp += if speed.gsp < 0.0 {
                         // Decelerate if moving left
                         state.action = PlayerAction::Skidding;
-                        constants.dec
+                        constants.dec * input.left_stick().0.abs()
                     } else {
                         // Accelerate otherwise
-                        constants.acc
+                        constants.acc * input.left_stick().0.abs()
                     };
 
                     if (state.action == PlayerAction::Skidding) && (speed.gsp >= 0.0) {
@@ -72,10 +72,10 @@ pub fn update(world: &mut World, input: &Input) -> GameResult {
                     speed.gsp -= if speed.gsp > 0.0 {
                         // Decelerate if moving right
                         state.action = PlayerAction::Skidding;
-                        constants.dec
+                        constants.dec * input.left_stick().0.abs()
                     } else {
                         // Accelerate otherwise
-                        constants.acc
+                        constants.acc * input.left_stick().0.abs()
                     };
 
                     if (state.action == PlayerAction::Skidding) && (speed.gsp <= 0.0) {
