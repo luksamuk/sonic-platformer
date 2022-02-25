@@ -2,6 +2,9 @@ mod input;
 mod objects;
 mod screen_systems;
 
+use ggez::event::Axis;
+use ggez::input::gamepad::GamepadId;
+use ggez::event::Button;
 use ggez::event::EventHandler;
 use ggez::event::{KeyCode, KeyMods};
 use ggez::graphics::{self, Color};
@@ -69,5 +72,19 @@ impl EventHandler<GameError> for MainState {
 
     fn key_up_event(&mut self, _ctx: &mut Context, keycode: KeyCode, _mod: KeyMods) {
         self.input.set_keyboard(keycode, false);
+    }
+
+    fn gamepad_button_down_event(&mut self, _ctx: &mut Context, btn: Button, _id: GamepadId) {
+        self.input.set_gamepad(btn, true);
+    }
+
+    fn gamepad_button_up_event(&mut self, _ctx: &mut Context, btn: Button, _id: GamepadId) {
+        self.input.set_gamepad(btn, false);
+    }
+
+    fn gamepad_axis_event(&mut self, _ctx: &mut Context, axis: Axis, value: f32, _id: GamepadId) {
+        if (axis == Axis::LeftStickX) || (axis == Axis::LeftStickY) {
+            self.input.set_axis(axis, value);
+        }
     }
 }
