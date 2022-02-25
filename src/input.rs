@@ -87,19 +87,19 @@ impl Input {
             KeyCode::Up => {
                 self.current.up = state;
                 self.current.lstick.1 = 1.0;
-            },
+            }
             KeyCode::Down => {
                 self.current.down = state;
                 self.current.lstick.1 = -1.0;
-            },
+            }
             KeyCode::Left => {
                 self.current.left = state;
                 self.current.lstick.0 = -1.0;
-            },
+            }
             KeyCode::Right => {
                 self.current.right = state;
                 self.current.lstick.0 = 1.0;
-            },
+            }
             KeyCode::Return => self.current.start = state,
             KeyCode::Escape => self.current.back = state,
             KeyCode::Z => self.current.a = state,
@@ -117,19 +117,19 @@ impl Input {
             Button::DPadUp => {
                 self.current.up = state;
                 self.current.lstick.1 = 1.0;
-            },
+            }
             Button::DPadDown => {
                 self.current.down = state;
                 self.current.lstick.1 = -1.0;
-            },
+            }
             Button::DPadLeft => {
                 self.current.left = state;
                 self.current.lstick.0 = -1.0;
-            },
+            }
             Button::DPadRight => {
                 self.current.right = state;
                 self.current.lstick.0 = 1.0;
-            },
+            }
             Button::Start => self.current.start = state,
             Button::Select => self.current.back = state,
             Button::South => self.current.a = state,
@@ -140,18 +140,13 @@ impl Input {
 
     pub fn set_axis(&mut self, axis: Axis, value: f32) {
         let state = value.abs() >= DEADZONE;
-        let value = if !state {
-            0.0
-        } else {
-            value
-        };
+        let value = if !state { 0.0 } else { value };
 
         match axis {
             Axis::LeftStickX => {
                 if !state {
                     self.current.left = false;
                     self.current.right = false;
-                    
                 } else if value > 0.0 {
                     self.current.left = false;
                     self.current.right = true;
@@ -160,7 +155,7 @@ impl Input {
                     self.current.right = false;
                 }
                 self.current.lstick.0 = value;
-            },
+            }
             Axis::LeftStickY => {
                 if !state {
                     self.current.up = false;
@@ -173,8 +168,8 @@ impl Input {
                     self.current.down = true;
                 }
                 self.current.lstick.1 = value;
-            },
-            _ => {},
+            }
+            _ => {}
         }
     }
 
