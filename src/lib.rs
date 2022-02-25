@@ -3,11 +3,11 @@ mod objects;
 mod screen_systems;
 
 use ggez::event::Axis;
-use ggez::input::gamepad::GamepadId;
 use ggez::event::Button;
 use ggez::event::EventHandler;
 use ggez::event::{KeyCode, KeyMods};
 use ggez::graphics::{self, Color};
+use ggez::input::gamepad::GamepadId;
 use ggez::timer;
 use ggez::{Context, GameError, GameResult};
 use input::*;
