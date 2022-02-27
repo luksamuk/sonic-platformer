@@ -1,5 +1,5 @@
 use ggez::{
-    conf::{FullscreenType, WindowMode, WindowSetup},
+    conf::{WindowMode, WindowSetup},
     event, ContextBuilder, GameError, GameResult,
 };
 use sonic_platformer::*;
@@ -24,7 +24,6 @@ fn main() -> GameResult {
     let window_setup = WindowSetup::default().title(GAME_NAME).vsync(true);
 
     let window_mode = WindowMode::default()
-        //.fullscreen_type(FullscreenType::Desktop)
         .dimensions(1280.0, 720.0);
 
     let (mut ctx, event_loop) = ContextBuilder::new("lvledit", "Lucas S. Vieira")

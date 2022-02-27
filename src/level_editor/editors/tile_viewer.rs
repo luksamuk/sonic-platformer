@@ -1,3 +1,5 @@
+use crate::level_editor::Input;
+use crate::level_editor::Editor;
 use ggez::graphics::Text;
 use ggez::graphics::{self, Color, PxScale, TextFragment};
 use ggez::{Context, GameResult};
@@ -16,8 +18,10 @@ impl TileViewer {
             tiles: None,
         }
     }
+}
 
-    pub fn reload(&mut self, context: &mut Context) -> GameResult {
+impl Editor for TileViewer {
+    fn reload(&mut self, context: &mut Context) -> GameResult {
         self.tiles = Some(SpriteAtlas::new(
             context,
             &self.tile_path,
@@ -26,7 +30,7 @@ impl TileViewer {
         Ok(())
     }
 
-    pub fn update(&mut self, context: &mut Context) -> GameResult {
+    fn update(&mut self, context: &mut Context, _input: &Input) -> GameResult {
         if self.tiles.is_some() {
             let max_columns = 8;
             let tiles_per_column = 14;
@@ -65,7 +69,7 @@ impl TileViewer {
         Ok(())
     }
 
-    pub fn draw(&self, context: &mut Context) -> GameResult {
+    fn draw(&self, context: &mut Context) -> GameResult {
         if self.tiles.is_some() {
             let atlas = self.tiles.as_ref().unwrap();
             atlas.draw(context)?;

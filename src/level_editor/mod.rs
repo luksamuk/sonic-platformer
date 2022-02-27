@@ -1,3 +1,4 @@
+use editors::editor::Editor;
 use ggez::event::EventHandler;
 use ggez::graphics::DrawParam;
 use ggez::graphics::FilterMode;
@@ -67,7 +68,7 @@ impl EventHandler<GameError> for EditorState {
         }
 
         let ret = match self.navigation {
-            EditorNavigation::TileViewer => self.tileviewer.update(ctx),
+            EditorNavigation::TileViewer => self.tileviewer.update(ctx, &self.input),
             EditorNavigation::PieceEditor => self.pieceeditor.update(ctx, &self.input),
             _ => Ok(()),
         };

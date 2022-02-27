@@ -1,3 +1,4 @@
+use crate::level_editor::editor::Editor;
 use ggez::graphics::TextFragment;
 use ggez::graphics::{self, Color, PxScale, Text};
 use ggez::Context;
@@ -31,9 +32,11 @@ impl PieceEditor {
             current_tile: 1,
         }
     }
+}
 
+impl Editor for PieceEditor {
     /// Reloads the piece data.
-    pub fn reload(&mut self, context: &mut Context) -> GameResult {
+    fn reload(&mut self, context: &mut Context) -> GameResult {
         self.tiles = Some(SpriteAtlas::new(
             context,
             &self.tiles_path,
@@ -45,7 +48,7 @@ impl PieceEditor {
     }
 
     /// Updates the piece editor.
-    pub fn update(&mut self, context: &mut Context, input: &Input) -> GameResult {
+    fn update(&mut self, context: &mut Context, input: &Input) -> GameResult {
         if input.pressed(InputButton::Right) {
             self.current_tile = (self.current_tile + 1) % self.data.len();
         } else if input.pressed(InputButton::Left) {
@@ -78,7 +81,7 @@ impl PieceEditor {
     }
 
     /// Draws the piece editor.
-    pub fn draw(&self, context: &mut Context) -> GameResult {
+    fn draw(&self, context: &mut Context) -> GameResult {
         let tiles = self.tiles.as_ref().unwrap();
         tiles.draw(context)?;
         Ok(())

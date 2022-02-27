@@ -14,6 +14,7 @@ use ggez::{Context, GameError, GameResult};
 use input::*;
 use screen_systems::Navigation;
 use screen_systems::ScreenSystems;
+use ggez::conf::FullscreenType;
 
 const DESIRED_FPS: u32 = 60;
 
@@ -22,6 +23,7 @@ pub struct MainState {
     navigation: Navigation,
     screen_systems: ScreenSystems,
     input: Input,
+    fullscreen: FullscreenType,
 }
 
 impl MainState {
@@ -30,10 +32,12 @@ impl MainState {
         let navigation = Navigation::default();
         let screen_systems = ScreenSystems::new(game_name);
         let input = Input::default();
+        let fullscreen = FullscreenType::Windowed;
         Ok(Self {
             navigation,
             screen_systems,
             input,
+            fullscreen,
         })
     }
 
@@ -63,12 +67,24 @@ impl EventHandler<GameError> for MainState {
 
     fn key_down_event(
         &mut self,
-        _ctx: &mut Context,
+        ctx: &mut Context,
         keycode: KeyCode,
-        _mod: KeyMods,
+        keymod: KeyMods,
         _repeat: bool,
     ) {
         self.input.set_keyboard(keycode, true);
+
+        // Alternate fullscreen with Alt+Enter
+        if (keymod == KeyMods::ALT) && (keycode == KeyCode::Return) {
+            let new_mode = match self.fullscreen {
+                FullscreenType::Windowed => FullscreenType::Desktop,
+                _ => FullscreenType::Windowed,
+            };
+
+            if let Ok(_) = graphics::set_fullscreen(ctx, new_mode) {
+                self.fullscreen = new_mode;
+            }
+       }
     }
 
     fn key_up_event(&mut self, _ctx: &mut Context, keycode: KeyCode, _mod: KeyMods) {
