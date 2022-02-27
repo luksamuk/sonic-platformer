@@ -1,5 +1,5 @@
-use crate::level_editor::Input;
 use crate::level_editor::Editor;
+use crate::level_editor::Input;
 use ggez::graphics::Text;
 use ggez::graphics::{self, Color, PxScale, TextFragment};
 use ggez::{Context, GameResult};

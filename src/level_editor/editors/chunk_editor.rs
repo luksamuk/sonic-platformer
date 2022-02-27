@@ -10,4 +10,3 @@ pub struct ChunkEditor {
     data: Vec<Tile128>,
     current_tile: usize,
 }
-

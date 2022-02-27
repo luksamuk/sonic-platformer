@@ -23,8 +23,7 @@ fn main() -> GameResult {
 
     let window_setup = WindowSetup::default().title(GAME_NAME).vsync(true);
 
-    let window_mode = WindowMode::default()
-        .dimensions(1280.0, 720.0);
+    let window_mode = WindowMode::default().dimensions(1280.0, 720.0);
 
     let (mut ctx, event_loop) = ContextBuilder::new("lvledit", "Lucas S. Vieira")
         .window_mode(window_mode)

@@ -3,6 +3,7 @@ pub mod objects;
 pub mod resources;
 pub mod screen_systems;
 
+use ggez::conf::FullscreenType;
 use ggez::event::Axis;
 use ggez::event::Button;
 use ggez::event::EventHandler;
@@ -14,7 +15,6 @@ use ggez::{Context, GameError, GameResult};
 use input::*;
 use screen_systems::Navigation;
 use screen_systems::ScreenSystems;
-use ggez::conf::FullscreenType;
 
 const DESIRED_FPS: u32 = 60;
 
@@ -81,10 +81,10 @@ impl EventHandler<GameError> for MainState {
                 _ => FullscreenType::Windowed,
             };
 
-            if let Ok(_) = graphics::set_fullscreen(ctx, new_mode) {
+            if graphics::set_fullscreen(ctx, new_mode).is_ok() {
                 self.fullscreen = new_mode;
             }
-       }
+        }
     }
 
     fn key_up_event(&mut self, _ctx: &mut Context, keycode: KeyCode, _mod: KeyMods) {

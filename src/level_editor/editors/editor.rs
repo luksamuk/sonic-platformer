@@ -1,6 +1,6 @@
 use crate::level_editor::Input;
-use ggez::GameResult;
 use ggez::Context;
+use ggez::GameResult;
 
 /// Trait representing a contract for an editor.
 pub trait Editor {
