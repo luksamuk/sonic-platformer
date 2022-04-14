@@ -63,6 +63,7 @@ impl Level {
 }
 
 pub fn slurp_file(context: &Context, path: &str) -> GameResult<String> {
+    dbg!(path);
     use ggez::filesystem;
     use std::io::Read;
     let mut buffer = String::new();

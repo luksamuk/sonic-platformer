@@ -30,6 +30,7 @@ pub struct EditorState {
     navigation: EditorNavigation,
     tileviewer: TileViewer,
     pieceeditor: PieceEditor,
+    chunkeditor: ChunkEditor,
     input: Input,
 }
 
@@ -40,6 +41,7 @@ impl EditorState {
             navigation: EditorNavigation::default(),
             tileviewer: TileViewer::new(&format!("/levels/{}/tiles.png", level_name)),
             pieceeditor: PieceEditor::new(level_name),
+            chunkeditor: ChunkEditor::new(level_name),
             input: Input::default(),
         }
     }
@@ -47,6 +49,7 @@ impl EditorState {
     pub fn setup(&mut self, context: &mut Context) -> GameResult {
         self.tileviewer.reload(context)?;
         self.pieceeditor.reload(context)?;
+        self.chunkeditor.reload(context)?;
         Ok(())
     }
 }
@@ -55,21 +58,26 @@ impl EventHandler<GameError> for EditorState {
     fn update(&mut self, ctx: &mut Context) -> GameResult {
         while !timer::check_update_time(ctx, DESIRED_FPS) {} // Spinlock
 
-        if self.input.pressed(InputButton::DbgNext)
-            && (self.navigation == EditorNavigation::TileViewer)
-        {
-            self.navigation = EditorNavigation::PieceEditor;
-            self.pieceeditor.reload(ctx)?;
-        } else if self.input.pressed(InputButton::DbgPrev)
-            && (self.navigation == EditorNavigation::PieceEditor)
-        {
-            self.navigation = EditorNavigation::TileViewer;
-            self.tileviewer.reload(ctx)?;
+        if self.input.pressed(InputButton::DbgNext) {
+            self.navigation = match self.navigation {
+                EditorNavigation::TileViewer => EditorNavigation::PieceEditor,
+                EditorNavigation::PieceEditor => EditorNavigation::ChunkEditor,
+                EditorNavigation::ChunkEditor => EditorNavigation::TileViewer,
+                _ => self.navigation.clone(),
+            };
+        } else if self.input.pressed(InputButton::DbgPrev) {
+            self.navigation = match self.navigation {
+                EditorNavigation::TileViewer => EditorNavigation::ChunkEditor,
+                EditorNavigation::PieceEditor => EditorNavigation::TileViewer,
+                EditorNavigation::ChunkEditor => EditorNavigation::PieceEditor,
+                _ => self.navigation.clone(),
+            };
         }
 
         let ret = match self.navigation {
             EditorNavigation::TileViewer => self.tileviewer.update(ctx, &self.input),
             EditorNavigation::PieceEditor => self.pieceeditor.update(ctx, &self.input),
+            EditorNavigation::ChunkEditor => self.chunkeditor.update(ctx, &self.input),
             _ => Ok(()),
         };
 
@@ -83,6 +91,7 @@ impl EventHandler<GameError> for EditorState {
         match self.navigation {
             EditorNavigation::TileViewer => self.tileviewer.draw(ctx)?,
             EditorNavigation::PieceEditor => self.pieceeditor.draw(ctx)?,
+            EditorNavigation::ChunkEditor => self.chunkeditor.draw(ctx)?,
             _ => {}
         }
 

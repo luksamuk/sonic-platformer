@@ -1,6 +1,6 @@
 /// Enumeration to determine the current
 /// editor screen being drawn and updated.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum EditorNavigation {
     /// Viewing mode for 8x8 tiles. Cannot edit.
     TileViewer,
