@@ -3,6 +3,7 @@ mod tile128;
 mod tile16;
 
 use crate::objects::sprite_atlas::SpriteAtlas;
+use ggez::audio::SoundData;
 use ggez::{Context, GameResult};
 use glam::*;
 
@@ -15,6 +16,7 @@ pub struct Level {
     tiles16: Vec<Tile16>,
     tiles128: Vec<Tile128>,
     map: Map,
+    bgm: Option<SoundData>,
 }
 
 impl Level {
@@ -24,8 +26,10 @@ impl Level {
         let tiles16_path = format!("{}/16x16.json", level_path);
         let tiles128_path = format!("{}/128x128.json", level_path);
         let map_path = format!("{}/map.json", level_path);
+        let bgm_path = format!("{}/music.ogg", level_path);
 
         let tilesheet = SpriteAtlas::new(context, &sprites_path, glam::vec2(8.0, 8.0))?;
+        let bgm = SoundData::new(context, &bgm_path).ok();
 
         let tiles16 = serde_json::from_str(&slurp_file(context, &tiles16_path)?)
             .map_err(|e| GameError::ConfigError(e.to_string()))?;
@@ -39,7 +43,12 @@ impl Level {
             tiles16,
             tiles128,
             map,
+            bgm,
         })
+    }
+
+    pub fn bgm_data(&self) -> &Option<SoundData> {
+        &self.bgm
     }
 
     pub fn clear(&mut self) {

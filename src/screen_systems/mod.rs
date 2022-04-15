@@ -34,13 +34,13 @@ impl ScreenSystems {
     /// Updates the current screen.
     pub fn update(
         &mut self,
-        _context: &mut Context,
+        context: &mut Context,
         navigation: &mut Navigation,
         input: &Input,
     ) -> GameResult {
         match navigation {
             Navigation::TitleScreen => self.title_screen.update(navigation, input)?,
-            Navigation::LevelScreen => self.level_screen.update(navigation, input)?,
+            Navigation::LevelScreen => self.level_screen.update(context, navigation, input)?,
             Navigation::Settings => {}
         };
         Ok(())

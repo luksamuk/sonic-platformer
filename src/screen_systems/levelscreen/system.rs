@@ -6,6 +6,8 @@ use crate::objects::level::*;
 use crate::objects::player::{self, *};
 use crate::objects::sprite_atlas::SpriteAtlas;
 use crate::screen_systems::Navigation;
+use ggez::audio;
+use ggez::audio::SoundSource;
 use ggez::{Context, GameResult};
 use glam::*;
 use legion::*;
@@ -19,6 +21,7 @@ pub struct LevelScreenSystem {
     camera_timer: i32,
     level: Option<Level>,
     viewport_size: Vec2,
+    bgm_src: Option<audio::Source>,
 }
 
 impl Default for LevelScreenSystem {
@@ -41,6 +44,7 @@ impl LevelScreenSystem {
             camera_timer: 0,
             level: None,
             viewport_size: Vec2::ZERO,
+            bgm_src: None,
         }
     }
 
@@ -53,12 +57,35 @@ impl LevelScreenSystem {
             glam::vec2(rect.w, rect.h)
         };
         Player::create(context, &mut self.world, false)?;
+
+        if self.level.is_some() {
+            let level = self.level.as_ref().unwrap();
+            let bgm = level.bgm_data();
+            if bgm.is_some() {
+                let data = bgm.as_ref().unwrap().clone();
+                let mut src = audio::Source::from_data(context, data)?;
+                src.set_repeat(true);
+                self.bgm_src = Some(src);
+            }
+        }
+
         Ok(())
     }
 
     /// Updates the level screen system.
-    pub fn update(&mut self, navigation: &mut Navigation, input: &Input) -> GameResult {
+    pub fn update(
+        &mut self,
+        context: &mut Context,
+        navigation: &mut Navigation,
+        input: &Input,
+    ) -> GameResult {
         if self.first_update {
+            // Start BGM playback
+            if self.bgm_src.is_some() {
+                let bgm_src = self.bgm_src.as_ref().unwrap();
+                bgm_src.play_later()?;
+            }
+
             self.first_update = false;
             Player::respawn_all(&mut self.world);
         }
@@ -146,6 +173,12 @@ impl LevelScreenSystem {
         }
 
         if input.pressed(InputButton::Back) {
+            // Stop BGM playback
+            if self.bgm_src.is_some() {
+                let bgm_src = self.bgm_src.as_mut().unwrap();
+                bgm_src.stop(context)?;
+            }
+
             self.first_update = true;
             *navigation = Navigation::TitleScreen;
         }
