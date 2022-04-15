@@ -127,4 +127,8 @@ impl EventHandler<GameError> for EditorState {
     fn key_up_event(&mut self, _ctx: &mut Context, keycode: KeyCode, _mod: KeyMods) {
         self.input.set_keyboard(keycode, false);
     }
+
+    fn mouse_motion_event(&mut self, _ctx: &mut Context, x: f32, y: f32, _dx: f32, _dy: f32) {
+        self.input.set_mouse_position(x, y);
+    }
 }

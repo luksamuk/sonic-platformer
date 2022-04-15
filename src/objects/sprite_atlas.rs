@@ -58,6 +58,7 @@ impl SpriteAtlas {
         let frame = self.calculate_frame(frame);
         let half_frame = self.half_frame * scale;
         let destination = hotspot - half_frame;
+
         let params = DrawParam::default()
             .src(frame)
             .scale(scale)

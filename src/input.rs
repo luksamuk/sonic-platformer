@@ -68,6 +68,8 @@ pub struct InputState {
     pub dbgprev: bool,
     /// The state of the left stick axis.
     pub lstick: (f32, f32),
+    /// The state of the mouse position.
+    pub mousepos: (f32, f32),
 }
 
 /// A structure describing the input system.
@@ -198,6 +200,10 @@ impl Input {
         }
     }
 
+    pub fn set_mouse_position(&mut self, x: f32, y: f32) {
+        self.current.mousepos = (x, y);
+    }
+
     /// Checks if the given button is currently being pressed.
     pub fn pressing(&self, btn: InputButton) -> bool {
         match btn {
@@ -240,5 +246,9 @@ impl Input {
     /// Returns the current state of the left thumbstick.
     pub fn left_stick(&self) -> (f32, f32) {
         self.current.lstick
+    }
+
+    pub fn mouse_position(&self) -> (f32, f32) {
+        self.current.mousepos
     }
 }

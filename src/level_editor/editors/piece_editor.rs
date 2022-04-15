@@ -1,4 +1,5 @@
 use crate::level_editor::editor::Editor;
+use crate::objects::tile_marker::TileMarker;
 use ggez::graphics::TextFragment;
 use ggez::graphics::{self, Color, PxScale, Text};
 use ggez::Context;
@@ -10,6 +11,8 @@ use sonic_platformer::objects::level::slurp_file;
 use sonic_platformer::objects::level::Tile16;
 use sonic_platformer::objects::sprite_atlas::SpriteAtlas;
 
+static PIECE_SCALE: f32 = 5.0;
+
 /// This struct is used to store the state of the piece editor.
 pub struct PieceEditor {
     tiles_path: String,
@@ -17,6 +20,7 @@ pub struct PieceEditor {
     tiles: Option<SpriteAtlas>,
     data: Vec<Tile16>,
     current_tile: usize,
+    marker: TileMarker,
 }
 
 impl PieceEditor {
@@ -24,12 +28,14 @@ impl PieceEditor {
     pub fn new(level_name: &str) -> Self {
         let tiles_path = format!("/levels/{}/tiles.png", level_name);
         let pieces_path = format!("/levels/{}/16x16.json", level_name);
+        let marker_size = PIECE_SCALE * 8.0;
         Self {
             tiles_path,
             pieces_path,
             tiles: None,
             data: Vec::new(),
             current_tile: 1,
+            marker: TileMarker::new(Vec2::new(marker_size, marker_size)),
         }
     }
 }
@@ -55,6 +61,8 @@ impl Editor for PieceEditor {
             self.current_tile = (self.current_tile + self.data.len() - 1) % self.data.len();
         }
 
+        self.marker.update(input)?;
+
         if let Some(tile) = self.data.get(self.current_tile) {
             let screen_center = {
                 let rect = graphics::screen_coordinates(context);
@@ -63,7 +71,7 @@ impl Editor for PieceEditor {
 
             let tiles = self.tiles.as_mut().unwrap();
             tiles.clear();
-            tile.put(tiles, Vec2::ZERO, -screen_center, 5.0)?;
+            tile.put(tiles, Vec2::ZERO, -screen_center, PIECE_SCALE)?;
         }
 
         let text = TextFragment::new(format!(
@@ -84,6 +92,7 @@ impl Editor for PieceEditor {
     fn draw(&self, context: &mut Context) -> GameResult {
         let tiles = self.tiles.as_ref().unwrap();
         tiles.draw(context)?;
+        self.marker.draw(context)?;
         Ok(())
     }
 }

@@ -1,5 +1,5 @@
 use crate::level_editor::Editor;
-use crate::level_editor::Input;
+use crate::level_editor::{Input, InputButton};
 use ggez::graphics::Text;
 use ggez::graphics::{self, Color, PxScale, TextFragment};
 use ggez::{Context, GameResult};
@@ -9,6 +9,7 @@ use sonic_platformer::objects::sprite_atlas::SpriteAtlas;
 pub struct TileViewer {
     tile_path: String,
     tiles: Option<SpriteAtlas>,
+    page: u32,
 }
 
 impl TileViewer {
@@ -16,6 +17,7 @@ impl TileViewer {
         Self {
             tile_path: String::from(tile_path),
             tiles: None,
+            page: 0,
         }
     }
 }
@@ -30,10 +32,17 @@ impl Editor for TileViewer {
         Ok(())
     }
 
-    fn update(&mut self, context: &mut Context, _input: &Input) -> GameResult {
+    fn update(&mut self, context: &mut Context, input: &Input) -> GameResult {
+        if input.pressed(InputButton::Right) {
+            self.page += 1;
+        } else if input.pressed(InputButton::Left) && (self.page > 0) {
+            self.page -= 1;
+        }
+
         if self.tiles.is_some() {
             let max_columns = 8;
             let tiles_per_column = 14;
+            let tiles_per_page = tiles_per_column * max_columns;
 
             let atlas = self.tiles.as_mut().unwrap();
             let scale_factor = 4.0;
@@ -44,7 +53,8 @@ impl Editor for TileViewer {
                 // columns
                 for i in 0..tiles_per_column {
                     // lines
-                    let current_frame = i + (j * tiles_per_column);
+                    let current_page_frame = i + (j * tiles_per_column);
+                    let current_frame = current_page_frame + (self.page * tiles_per_page);
                     let hotspot = glam::vec2(
                         5.0 + (8.0 * scale_factor)
                             + (j as f32 * 100.0)
@@ -56,7 +66,7 @@ impl Editor for TileViewer {
                     let text_position =
                         glam::vec2(hotspot.x + (8.0 * scale_factor), hotspot.y - 8.0);
 
-                    let text = TextFragment::new(format!("{:02}", current_frame))
+                    let text = TextFragment::new(format!("{:02X}", current_frame))
                         .color(Color::WHITE)
                         .scale(PxScale::from(24.0));
                     let text = Text::new(text);

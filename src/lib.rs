@@ -104,4 +104,8 @@ impl EventHandler<GameError> for MainState {
             self.input.set_axis(axis, value);
         }
     }
+
+    fn mouse_motion_event(&mut self, _ctx: &mut Context, x: f32, y: f32, _dx: f32, _dy: f32) {
+        self.input.set_mouse_position(x, y);
+    }
 }

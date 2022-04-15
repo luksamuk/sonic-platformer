@@ -2,9 +2,12 @@ use crate::input::{Input, InputButton};
 use crate::level_editor::editor::Editor;
 use crate::objects::level::{slurp_file, Tile128, Tile16};
 use crate::objects::sprite_atlas::SpriteAtlas;
+use crate::objects::tile_marker::TileMarker;
 use ggez::graphics::{self, Color, PxScale, Text, TextFragment};
 use ggez::{Context, GameError, GameResult};
 use glam::*;
+
+static PIECE_SCALE: f32 = 2.0;
 
 pub struct ChunkEditor {
     tiles_path: String,
@@ -14,6 +17,7 @@ pub struct ChunkEditor {
     pieces: Vec<Tile16>,
     data: Vec<Tile128>,
     current_chunk: usize,
+    marker: TileMarker,
 }
 
 impl ChunkEditor {
@@ -21,6 +25,7 @@ impl ChunkEditor {
         let tiles_path = format!("/levels/{}/tiles.png", level_name);
         let pieces_path = format!("/levels/{}/16x16.json", level_name);
         let chunks_path = format!("/levels/{}/128x128.json", level_name);
+        let marker_size = 16.0 * PIECE_SCALE;
         Self {
             tiles_path,
             pieces_path,
@@ -29,6 +34,7 @@ impl ChunkEditor {
             pieces: Vec::new(),
             data: Vec::new(),
             current_chunk: 1,
+            marker: TileMarker::new(Vec2::new(marker_size, marker_size)),
         }
     }
 }
@@ -55,6 +61,8 @@ impl Editor for ChunkEditor {
             self.current_chunk = (self.current_chunk + self.data.len() - 1) % self.data.len();
         }
 
+        self.marker.update(input)?;
+
         if let Some(chunk) = self.data.get(self.current_chunk) {
             let screen_center = {
                 let rect = graphics::screen_coordinates(context);
@@ -64,7 +72,13 @@ impl Editor for ChunkEditor {
             let tiles = self.tiles.as_mut().unwrap();
             let pieces = &self.pieces;
             tiles.clear();
-            chunk.put(pieces, tiles, glam::vec2(-96.0, -96.0), -screen_center, 2.0)?;
+            chunk.put(
+                pieces,
+                tiles,
+                glam::vec2(-96.0, -96.0),
+                -screen_center,
+                PIECE_SCALE,
+            )?;
         }
 
         let text = TextFragment::new(format!(
@@ -89,6 +103,7 @@ impl Editor for ChunkEditor {
     fn draw(&self, context: &mut Context) -> GameResult {
         let tiles = self.tiles.as_ref().unwrap();
         tiles.draw(context)?;
+        self.marker.draw(context)?;
         Ok(())
     }
 }
