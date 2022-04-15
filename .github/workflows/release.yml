@@ -107,7 +107,7 @@ jobs:
           components: clippy, rustfmt
 
       - name: Compilação de Versão
-        run: cargo rustc --release --bin sonic-platformer -- -Clink-args="/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup"
+        run: cargo rustc --release --bin game -- -Clink-args="/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup"
       
       - name: Preparação dos recursos
         run: mkdir release && xcopy /E /I .\resources .\release\resources
