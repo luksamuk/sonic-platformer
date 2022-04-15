@@ -84,7 +84,7 @@ impl Editor for ChunkEditor {
         let text = TextFragment::new(format!(
             "Tile: {:02}/{:02}",
             self.current_chunk,
-            if self.data.len() > 0 {
+            if !self.data.is_empty() {
                 self.data.len() - 1
             } else {
                 0
