@@ -76,14 +76,14 @@ jobs:
         run: cargo build
       
       - name: Preparação dos artefatos
-        run: cp ./target/debug/sonic-platformer ./
+        run: cp ./target/debug/game ./
       
       - name: Upload de artefatos
         uses: actions/upload-artifact@v2
         with:
           name: linux_debug
           path: |
-            ./sonic-platformer
+            ./game
             resources/
 
   build-windows:
@@ -113,12 +113,12 @@ jobs:
         run: cargo build
       
       - name: Preparação dos artefatos
-        run: copy .\target\debug\sonic-platformer.exe .\
+        run: copy .\target\debug\game.exe .\
       
       - name: Upload de artefatos
         uses: actions/upload-artifact@v2
         with:
           name: windows_debug
           path: |
-            ./sonic-platformer.exe
+            ./game.exe
             resources/

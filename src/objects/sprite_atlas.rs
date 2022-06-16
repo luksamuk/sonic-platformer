@@ -1,5 +1,5 @@
 use ggez::graphics::spritebatch::SpriteBatch;
-use ggez::graphics::{self, DrawParam, Image, Rect};
+use ggez::graphics::{self, DrawParam, FilterMode, Image, Rect};
 use ggez::{Context, GameResult};
 use glam::*;
 
@@ -24,7 +24,8 @@ impl SpriteAtlas {
     /// and the frame size is required in pixels.
     pub fn new(context: &mut Context, path: &str, frame_size: Vec2) -> GameResult<Self> {
         let texture = Image::new(context, path)?;
-        let batch = SpriteBatch::new(texture.clone());
+        let mut batch = SpriteBatch::new(texture.clone());
+        batch.set_filter(FilterMode::Nearest);
         Ok(Self {
             texture,
             batch,
@@ -57,6 +58,7 @@ impl SpriteAtlas {
         let frame = self.calculate_frame(frame);
         let half_frame = self.half_frame * scale;
         let destination = hotspot - half_frame;
+
         let params = DrawParam::default()
             .src(frame)
             .scale(scale)

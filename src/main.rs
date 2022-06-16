@@ -6,33 +6,21 @@ use ggez::{
     event, ContextBuilder, GameResult,
 };
 use sonic_platformer::*;
-use std::env;
-use std::path::PathBuf;
 
-const GAME_NAME: &str = "sonic-platformer";
-
-fn get_resource_dir() -> PathBuf {
-    if let Ok(manifest_dir) = env::var("CARGO_MANIFEST_DIR") {
-        let mut path = PathBuf::from(manifest_dir);
-        path.push("resources");
-        path
-    } else {
-        PathBuf::from("./resources")
-    }
-}
+const GAME_NAME: &str = "Sonic Studium";
 
 fn main() -> GameResult {
     let window_setup = WindowSetup::default().title(GAME_NAME).vsync(false);
 
     let window_mode = WindowMode::default()
         //.fullscreen_type(FullscreenType::Desktop)
-        .dimensions(854.0, 480.0)
+        .dimensions(960.0, 540.0)
         .resizable(false);
 
     let (mut ctx, event_loop) = ContextBuilder::new("sonic_platformer", "Lucas S. Vieira")
         .window_mode(window_mode)
         .window_setup(window_setup)
-        .add_resource_path(get_resource_dir())
+        .add_resource_path(resources::get_resource_dir())
         .build()?;
 
     let mut main_state = MainState::new(GAME_NAME)?;

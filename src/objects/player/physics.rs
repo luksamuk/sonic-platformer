@@ -5,7 +5,7 @@ use legion::*;
 
 /// Y coordinate of a fake ground for the player.
 /// Should be removed once collision is working.
-pub const FAKE_GROUND_Y: f32 = 800.0;
+pub const FAKE_GROUND_Y: f32 = 850.0;
 
 /// Updates the player's logic based on the input.
 ///

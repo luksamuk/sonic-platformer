@@ -1,11 +1,14 @@
 use super::sprite_atlas::SpriteAtlas;
 use crate::objects::general::Direction;
 use crate::objects::general::Position;
-use ggez::{Context, GameError, GameResult};
+use ggez::{GameError, GameResult};
 use glam::*;
 use std::collections::HashMap;
 use std::time::{Duration, Instant};
 
+/// Represents data for a single animation.
+/// The animation is played in the order of the frames.
+/// The animation is played once if `loop` is false.
 #[derive(Clone, Debug, PartialEq)]
 pub struct AnimationData {
     pub frames: Vec<u32>,
@@ -13,11 +16,18 @@ pub struct AnimationData {
     pub loopback_index: usize,
     pub speed: Duration,
 }
+
 /// A helper structure to build an animator.
 ///
 /// Allows you to build an animator by adding animations to it.
 pub struct AnimatorBuilder {
     pub data: HashMap<String, AnimationData>,
+}
+
+impl Default for AnimatorBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl AnimatorBuilder {

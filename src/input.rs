@@ -25,6 +25,16 @@ pub enum InputButton {
     Back,
     /// The A button.
     A,
+    /// The B button.
+    B,
+    /// The X button.
+    X,
+    /// The Y button.
+    Y,
+    /// The next button for debug screens.
+    DbgNext,
+    /// The previous button for debug screens.
+    DbgPrev,
 }
 
 /// A structure describing an input state.
@@ -46,8 +56,20 @@ pub struct InputState {
     pub back: bool,
     /// The state of the A button.
     pub a: bool,
+    /// The state of the B button.
+    pub b: bool,
+    /// The state of the X button.
+    pub x: bool,
+    /// The state of the Y button.
+    pub y: bool,
+    /// The state of the next button for debug screens.
+    pub dbgnext: bool,
+    /// The state of the previous button for debug screens.
+    pub dbgprev: bool,
     /// The state of the left stick axis.
     pub lstick: (f32, f32),
+    /// The state of the mouse position.
+    pub mousepos: (f32, f32),
 }
 
 /// A structure describing the input system.
@@ -103,6 +125,11 @@ impl Input {
             KeyCode::Return => self.current.start = state,
             KeyCode::Escape => self.current.back = state,
             KeyCode::Z => self.current.a = state,
+            KeyCode::X => self.current.b = state,
+            KeyCode::C => self.current.x = state,
+            KeyCode::S => self.current.y = state,
+            KeyCode::LBracket => self.current.dbgprev = state,
+            KeyCode::RBracket => self.current.dbgnext = state,
             _ => {}
         }
         self.correct_axes();
@@ -173,6 +200,10 @@ impl Input {
         }
     }
 
+    pub fn set_mouse_position(&mut self, x: f32, y: f32) {
+        self.current.mousepos = (x, y);
+    }
+
     /// Checks if the given button is currently being pressed.
     pub fn pressing(&self, btn: InputButton) -> bool {
         match btn {
@@ -184,6 +215,11 @@ impl Input {
             InputButton::Start => self.current.start,
             InputButton::Back => self.current.back,
             InputButton::A => self.current.a,
+            InputButton::B => self.current.b,
+            InputButton::X => self.current.x,
+            InputButton::Y => self.current.y,
+            InputButton::DbgNext => self.current.dbgnext,
+            InputButton::DbgPrev => self.current.dbgprev,
         }
     }
 
@@ -199,11 +235,20 @@ impl Input {
             InputButton::Start => self.current.start && !self.previous.start,
             InputButton::Back => self.current.back && !self.previous.back,
             InputButton::A => self.current.a && !self.previous.a,
+            InputButton::B => self.current.b && !self.previous.b,
+            InputButton::X => self.current.x && !self.previous.x,
+            InputButton::Y => self.current.y && !self.previous.y,
+            InputButton::DbgNext => self.current.dbgnext && !self.previous.dbgnext,
+            InputButton::DbgPrev => self.current.dbgprev && !self.previous.dbgprev,
         }
     }
 
     /// Returns the current state of the left thumbstick.
     pub fn left_stick(&self) -> (f32, f32) {
         self.current.lstick
+    }
+
+    pub fn mouse_position(&self) -> (f32, f32) {
+        self.current.mousepos
     }
 }

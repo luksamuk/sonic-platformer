@@ -1,7 +1,9 @@
-mod input;
-mod objects;
-mod screen_systems;
+pub mod input;
+pub mod objects;
+pub mod resources;
+pub mod screen_systems;
 
+use ggez::conf::FullscreenType;
 use ggez::event::Axis;
 use ggez::event::Button;
 use ggez::event::EventHandler;
@@ -21,6 +23,7 @@ pub struct MainState {
     navigation: Navigation,
     screen_systems: ScreenSystems,
     input: Input,
+    fullscreen: FullscreenType,
 }
 
 impl MainState {
@@ -29,10 +32,12 @@ impl MainState {
         let navigation = Navigation::default();
         let screen_systems = ScreenSystems::new(game_name);
         let input = Input::default();
+        let fullscreen = FullscreenType::Windowed;
         Ok(Self {
             navigation,
             screen_systems,
             input,
+            fullscreen,
         })
     }
 
@@ -62,12 +67,24 @@ impl EventHandler<GameError> for MainState {
 
     fn key_down_event(
         &mut self,
-        _ctx: &mut Context,
+        ctx: &mut Context,
         keycode: KeyCode,
-        _mod: KeyMods,
+        keymod: KeyMods,
         _repeat: bool,
     ) {
         self.input.set_keyboard(keycode, true);
+
+        // Alternate fullscreen with Alt+Enter
+        if (keymod == KeyMods::ALT) && (keycode == KeyCode::Return) {
+            let new_mode = match self.fullscreen {
+                FullscreenType::Windowed => FullscreenType::Desktop,
+                _ => FullscreenType::Windowed,
+            };
+
+            if graphics::set_fullscreen(ctx, new_mode).is_ok() {
+                self.fullscreen = new_mode;
+            }
+        }
     }
 
     fn key_up_event(&mut self, _ctx: &mut Context, keycode: KeyCode, _mod: KeyMods) {
@@ -86,5 +103,9 @@ impl EventHandler<GameError> for MainState {
         if (axis == Axis::LeftStickX) || (axis == Axis::LeftStickY) {
             self.input.set_axis(axis, value);
         }
+    }
+
+    fn mouse_motion_event(&mut self, _ctx: &mut Context, x: f32, y: f32, _dx: f32, _dy: f32) {
+        self.input.set_mouse_position(x, y);
     }
 }

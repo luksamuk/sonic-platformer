@@ -47,7 +47,7 @@ impl Player {
                 26,
                 125,
             )?
-            .add_animation("walk", &[5, 6, 7, 8, 9, 10], true, 0, 100)?
+            .add_animation("walk", &[5, 6, 7, 8, 9, 10], true, 0, 50)?
             .add_animation("run", &[11, 12, 13, 14], true, 0, 63)?
             .add_animation("roll", &[15, 16, 17, 16, 19, 16, 21, 16], true, 0, 125)?
             .add_animation("skid", &[23], true, 0, 1000)?
