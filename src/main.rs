@@ -7,7 +7,7 @@ use ggez::{
 };
 use sonic_platformer::*;
 
-const GAME_NAME: &str = "sonic-platformer";
+const GAME_NAME: &str = "Sonic Studium";
 
 fn main() -> GameResult {
     let window_setup = WindowSetup::default().title(GAME_NAME).vsync(false);
